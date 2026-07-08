@@ -1,0 +1,41 @@
+## User-specific files
+*.rsuser
+*.suo
+*.user
+*.userhtml
+*.userosscache
+*.sln.docstates
+
+## Build results
+[Dd]ebug/
+[Dd]ebugPublic/
+[Rr]elease/
+x64/
+x86/
+[Aa]rm/
+[Aa]rm64/
+bbin/
+bin/          
+obj/
+
+## Visual Studio 2015/2017/2019/2022 cache directories
+.vs/
+/.vs/
+
+## Visual Studio Code
+.vscode/
+.history/
+
+## Rider
+.idea/
+
+## OmniSharp
+.omnisharp/
+
+## EF Core Migrations Tooling
+*.exe
+*.dll
+*.pdb
+
+## Sensitif / Environment Lokal
+appsettings.Development.json
