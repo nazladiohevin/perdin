@@ -360,6 +360,77 @@ namespace Perdin.WebApi.Data
                         new { UsersId = 10, RolesId = 1 }
                     );
                 });
+
+            var now = new DateTime(2026, 1, 1);
+
+            modelBuilder.Entity<Country>().HasData(
+                new Country { Id = 1, Name = "Indonesia", IsForeign = false, CreatedAt = now },
+                new Country { Id = 2, Name = "Malaysia", IsForeign = true, CreatedAt = now },
+                new Country { Id = 3, Name = "Singapura", IsForeign = true, CreatedAt = now },
+                new Country { Id = 4, Name = "Thailand", IsForeign = true, CreatedAt = now },
+                new Country { Id = 5, Name = "Vietnam", IsForeign = true, CreatedAt = now },
+                new Country { Id = 6, Name = "Filipina", IsForeign = true, CreatedAt = now },
+                new Country { Id = 7, Name = "Brunei", IsForeign = true, CreatedAt = now },
+                new Country { Id = 8, Name = "Jepang", IsForeign = true, CreatedAt = now },
+                new Country { Id = 9, Name = "Korea Selatan", IsForeign = true, CreatedAt = now },
+                new Country { Id = 10, Name = "China", IsForeign = true, CreatedAt = now },
+                new Country { Id = 11, Name = "Amerika Serikat", IsForeign = true, CreatedAt = now },
+                new Country { Id = 12, Name = "Inggris", IsForeign = true, CreatedAt = now },
+                new Country { Id = 13, Name = "Jerman", IsForeign = true, CreatedAt = now },
+                new Country { Id = 14, Name = "Perancis", IsForeign = true, CreatedAt = now },
+                new Country { Id = 15, Name = "Belanda", IsForeign = true, CreatedAt = now },
+                new Country { Id = 16, Name = "Australia", IsForeign = true, CreatedAt = now },
+                new Country { Id = 17, Name = "Selandia Baru", IsForeign = true, CreatedAt = now },
+                new Country { Id = 18, Name = "Arab Saudi", IsForeign = true, CreatedAt = now },
+                new Country { Id = 19, Name = "Uni Emirat Arab", IsForeign = true, CreatedAt = now },
+                new Country { Id = 20, Name = "India", IsForeign = true, CreatedAt = now }
+            );
+
+            modelBuilder.Entity<Province>().HasData(
+                new Province { Id = 1, CountryId = 1, Name = "DKI Jakarta", CreatedAt = now },
+                new Province { Id = 2, CountryId = 1, Name = "Jawa Barat", CreatedAt = now },
+                new Province { Id = 3, CountryId = 1, Name = "Jawa Tengah", CreatedAt = now },
+                new Province { Id = 4, CountryId = 1, Name = "DI Yogyakarta", CreatedAt = now },
+                new Province { Id = 5, CountryId = 1, Name = "Jawa Timur", CreatedAt = now },
+                new Province { Id = 6, CountryId = 1, Name = "Banten", CreatedAt = now },
+                new Province { Id = 7, CountryId = 1, Name = "Bali", CreatedAt = now },
+                new Province { Id = 8, CountryId = 1, Name = "Sumatera Utara", CreatedAt = now },
+                new Province { Id = 9, CountryId = 2, Name = "Kuala Lumpur", CreatedAt = now },
+                new Province { Id = 10, CountryId = 2, Name = "Selangor", CreatedAt = now },
+                new Province { Id = 11, CountryId = 3, Name = "Central Singapore", CreatedAt = now },
+                new Province { Id = 12, CountryId = 4, Name = "Bangkok", CreatedAt = now },
+                new Province { Id = 13, CountryId = 5, Name = "Hanoi", CreatedAt = now },
+                new Province { Id = 14, CountryId = 6, Name = "Metro Manila", CreatedAt = now },
+                new Province { Id = 15, CountryId = 8, Name = "Tokyo", CreatedAt = now },
+                new Province { Id = 16, CountryId = 9, Name = "Seoul", CreatedAt = now },
+                new Province { Id = 17, CountryId = 10, Name = "Beijing", CreatedAt = now },
+                new Province { Id = 18, CountryId = 11, Name = "California", CreatedAt = now },
+                new Province { Id = 19, CountryId = 11, Name = "New York", CreatedAt = now },
+                new Province { Id = 20, CountryId = 12, Name = "Greater London", CreatedAt = now }
+            );
+
+            modelBuilder.Entity<City>().HasData(
+                new City { Id = 1, ProvinceId = 1, Name = "Jakarta Pusat", Latitude = -6.1805m, Longitude = 106.8284m, CreatedAt = now },
+                new City { Id = 2, ProvinceId = 1, Name = "Jakarta Selatan", Latitude = -6.2615m, Longitude = 106.8106m, CreatedAt = now },
+                new City { Id = 3, ProvinceId = 2, Name = "Bandung", Latitude = -6.9175m, Longitude = 107.6191m, CreatedAt = now },
+                new City { Id = 4, ProvinceId = 2, Name = "Bogor", Latitude = -6.5971m, Longitude = 106.7932m, CreatedAt = now },
+                new City { Id = 5, ProvinceId = 3, Name = "Semarang", Latitude = -6.9667m, Longitude = 110.4167m, CreatedAt = now },
+                new City { Id = 6, ProvinceId = 3, Name = "Surakarta", Latitude = -7.5667m, Longitude = 110.8167m, CreatedAt = now },
+                new City { Id = 7, ProvinceId = 4, Name = "Yogyakarta", Latitude = -7.7956m, Longitude = 110.3695m, CreatedAt = now },
+                new City { Id = 8, ProvinceId = 5, Name = "Surabaya", Latitude = -7.2504m, Longitude = 112.7688m, CreatedAt = now },
+                new City { Id = 9, ProvinceId = 5, Name = "Malang", Latitude = -7.9839m, Longitude = 112.6214m, CreatedAt = now },
+                new City { Id = 10, ProvinceId = 6, Name = "Tangerang", Latitude = -6.1702m, Longitude = 106.6403m, CreatedAt = now },
+                new City { Id = 11, ProvinceId = 7, Name = "Denpasar", Latitude = -8.6705m, Longitude = 115.2126m, CreatedAt = now },
+                new City { Id = 12, ProvinceId = 8, Name = "Medan", Latitude = 3.5952m, Longitude = 98.6722m, CreatedAt = now },
+                new City { Id = 13, ProvinceId = 9, Name = "Kuala Lumpur City", Latitude = 3.1390m, Longitude = 101.6869m, CreatedAt = now },
+                new City { Id = 14, ProvinceId = 10, Name = "Petaling Jaya", Latitude = 3.1073m, Longitude = 101.6067m, CreatedAt = now },
+                new City { Id = 15, ProvinceId = 11, Name = "Singapore City", Latitude = 1.3521m, Longitude = 103.8198m, CreatedAt = now },
+                new City { Id = 16, ProvinceId = 12, Name = "Bangkok City", Latitude = 13.7563m, Longitude = 100.5018m, CreatedAt = now },
+                new City { Id = 17, ProvinceId = 15, Name = "Shinjuku", Latitude = 35.6938m, Longitude = 139.7034m, CreatedAt = now },
+                new City { Id = 18, ProvinceId = 16, Name = "Gangnam", Latitude = 37.4979m, Longitude = 127.0276m, CreatedAt = now },
+                new City { Id = 19, ProvinceId = 18, Name = "Los Angeles", Latitude = 34.0522m, Longitude = -118.2437m, CreatedAt = now },
+                new City { Id = 20, ProvinceId = 20, Name = "London City", Latitude = 51.5074m, Longitude = -0.1278m, CreatedAt = now }
+            );
         }
     }
 }
