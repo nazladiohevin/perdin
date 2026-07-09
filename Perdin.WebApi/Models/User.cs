@@ -14,5 +14,6 @@ namespace Perdin.WebApi.Models
         // Navigation properties
         public ICollection<BusinessTripRequest> BusinessTripRequestsAsUser { get; set; } = new List<BusinessTripRequest>();
         public ICollection<BusinessTripRequest> BusinessTripRequestsAsApprover { get; set; } = new List<BusinessTripRequest>();
+        public List<Role> Roles { get; set; } = new();
     }
 }
