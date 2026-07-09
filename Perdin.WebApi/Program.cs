@@ -78,6 +78,20 @@ builder.Services.AddAuthentication(options =>
             };
 
             await context.Response.WriteAsJsonAsync(response);
+        },
+        OnForbidden = async context =>
+        {
+            context.Response.StatusCode = 403;
+            context.Response.ContentType = "application/json";
+
+            var response = new
+            {
+                success = false,
+                message = "Anda tidak memiliki akses.",
+                data = (object?)null
+            };
+
+            await context.Response.WriteAsJsonAsync(response);
         }
     };
 });
