@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Perdin.WebApi.Data;
 
@@ -11,9 +12,11 @@ using Perdin.WebApi.Data;
 namespace Perdin.WebApi.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260708100035_AddRolesAndManyToManyRelation")]
+    partial class AddRolesAndManyToManyRelation
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -249,23 +252,6 @@ namespace Perdin.WebApi.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("roles", (string)null);
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            Name = "ADMIN"
-                        },
-                        new
-                        {
-                            Id = 2,
-                            Name = "PEGAWAI"
-                        },
-                        new
-                        {
-                            Id = 3,
-                            Name = "SDM"
-                        });
                 });
 
             modelBuilder.Entity("Perdin.WebApi.Models.User", b =>
@@ -330,7 +316,7 @@ namespace Perdin.WebApi.Migrations
 
                     b.HasIndex("UsersId");
 
-                    b.ToTable("user_roles", (string)null);
+                    b.ToTable("RoleUser");
                 });
 
             modelBuilder.Entity("Perdin.WebApi.Models.BusinessTripRequest", b =>

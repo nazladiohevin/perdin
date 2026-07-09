@@ -14,6 +14,7 @@ namespace Perdin.WebApi.Data
         public DbSet<Province> Provinces { get; set; }
         public DbSet<City> Cities { get; set; }
         public DbSet<BusinessTripRequest> BusinessTripRequests { get; set; }
+        public DbSet<Role> Roles { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -292,6 +293,32 @@ namespace Perdin.WebApi.Data
                     .HasConstraintName("FK_BusinessTrip_DestinationCountry")
                     .OnDelete(DeleteBehavior.NoAction);
             });
+
+            modelBuilder.Entity<Role>(entity =>
+            {
+                entity.ToTable("roles");
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.Id).HasColumnName("id");
+                entity.Property(e => e.Name)
+                    .HasColumnName("name")
+                    .HasColumnType("varchar(50)")
+                    .IsRequired();
+            });
+
+            modelBuilder.Entity<User>()
+                .HasMany(u => u.Roles)
+                .WithMany(r => r.Users)
+                .UsingEntity(j => j.ToTable("user_roles"));
+
+
+            // =============================================
+            // SEEDING
+            // =============================================
+            modelBuilder.Entity<Role>().HasData(
+                new Role { Id = 1, Name = "ADMIN" },
+                new Role { Id = 2, Name = "PEGAWAI" },
+                new Role { Id = 3, Name = "SDM" }
+            );
         }
     }
 }
