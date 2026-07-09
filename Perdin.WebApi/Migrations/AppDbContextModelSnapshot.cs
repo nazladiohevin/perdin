@@ -530,7 +530,8 @@ namespace Perdin.WebApi.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("CountryId")
+                    b.Property<int?>("CountryId")
+                        .IsRequired()
                         .HasColumnType("int")
                         .HasColumnName("country_id");
 
