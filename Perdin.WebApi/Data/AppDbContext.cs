@@ -63,6 +63,12 @@ namespace Perdin.WebApi.Data
                 entity.Property(e => e.UpdatedAt)
                     .HasColumnName("updated_at")
                     .HasColumnType("datetime");
+
+                entity.Property(e => e.DeletedAt)
+                    .HasColumnName("deleted_at")
+                    .HasColumnType("datetime");
+
+                entity.HasQueryFilter(e => e.DeletedAt == null);
             });
 
             // =============================================
