@@ -10,6 +10,7 @@ namespace Perdin.WebApi.Models
 
         public DateTime CreatedAt { get; set; }
         public DateTime? UpdatedAt { get; set; }
+        public DateTime? DeletedAt { get; set; }
 
         // Navigation properties
         public ICollection<BusinessTripRequest> BusinessTripRequestsAsUser { get; set; } = new List<BusinessTripRequest>();
