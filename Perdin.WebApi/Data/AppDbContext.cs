@@ -122,6 +122,11 @@ namespace Perdin.WebApi.Data
                     .HasColumnType("varchar(100)")
                     .IsRequired();
 
+                entity.Property(e => e.Island)
+                    .HasColumnName("island")
+                    .HasColumnType("varchar(50)")
+                    .IsRequired();
+
                 entity.Property(e => e.CreatedAt)
                     .HasColumnName("created_at")
                     .HasColumnType("datetime")
@@ -242,8 +247,7 @@ namespace Perdin.WebApi.Data
                     .HasDefaultValue("reviewed");
 
                 entity.Property(e => e.ApproverId)
-                    .HasColumnName("approver_id")
-                    .IsRequired();
+                    .HasColumnName("approver_id");
 
                 entity.Property(e => e.Purpose)
                     .HasColumnName("purpose")
@@ -393,26 +397,26 @@ namespace Perdin.WebApi.Data
             );
 
             modelBuilder.Entity<Province>().HasData(
-                new Province { Id = 1, CountryId = 1, Name = "DKI Jakarta", CreatedAt = now },
-                new Province { Id = 2, CountryId = 1, Name = "Jawa Barat", CreatedAt = now },
-                new Province { Id = 3, CountryId = 1, Name = "Jawa Tengah", CreatedAt = now },
-                new Province { Id = 4, CountryId = 1, Name = "DI Yogyakarta", CreatedAt = now },
-                new Province { Id = 5, CountryId = 1, Name = "Jawa Timur", CreatedAt = now },
-                new Province { Id = 6, CountryId = 1, Name = "Banten", CreatedAt = now },
-                new Province { Id = 7, CountryId = 1, Name = "Bali", CreatedAt = now },
-                new Province { Id = 8, CountryId = 1, Name = "Sumatera Utara", CreatedAt = now },
-                new Province { Id = 9, CountryId = 2, Name = "Kuala Lumpur", CreatedAt = now },
-                new Province { Id = 10, CountryId = 2, Name = "Selangor", CreatedAt = now },
-                new Province { Id = 11, CountryId = 3, Name = "Central Singapore", CreatedAt = now },
-                new Province { Id = 12, CountryId = 4, Name = "Bangkok", CreatedAt = now },
-                new Province { Id = 13, CountryId = 5, Name = "Hanoi", CreatedAt = now },
-                new Province { Id = 14, CountryId = 6, Name = "Metro Manila", CreatedAt = now },
-                new Province { Id = 15, CountryId = 8, Name = "Tokyo", CreatedAt = now },
-                new Province { Id = 16, CountryId = 9, Name = "Seoul", CreatedAt = now },
-                new Province { Id = 17, CountryId = 10, Name = "Beijing", CreatedAt = now },
-                new Province { Id = 18, CountryId = 11, Name = "California", CreatedAt = now },
-                new Province { Id = 19, CountryId = 11, Name = "New York", CreatedAt = now },
-                new Province { Id = 20, CountryId = 12, Name = "Greater London", CreatedAt = now }
+                new Province { Id = 1, CountryId = 1, Name = "DKI Jakarta", Island = "Jawa", CreatedAt = now },
+                new Province { Id = 2, CountryId = 1, Name = "Jawa Barat", Island = "Jawa", CreatedAt = now },
+                new Province { Id = 3, CountryId = 1, Name = "Jawa Tengah", Island = "Jawa", CreatedAt = now },
+                new Province { Id = 4, CountryId = 1, Name = "DI Yogyakarta", Island = "Jawa", CreatedAt = now },
+                new Province { Id = 5, CountryId = 1, Name = "Jawa Timur", Island = "Jawa", CreatedAt = now },
+                new Province { Id = 6, CountryId = 1, Name = "Banten", Island = "Jawa", CreatedAt = now },
+                new Province { Id = 7, CountryId = 1, Name = "Bali", Island = "Bali", CreatedAt = now },
+                new Province { Id = 8, CountryId = 1, Name = "Sumatera Utara", Island = "Sumatera", CreatedAt = now },
+                new Province { Id = 9, CountryId = 1, Name = "Riau", Island = "Sumatera", CreatedAt = now },
+                new Province { Id = 10, CountryId = 1, Name = "Kepulauan Riau", Island = "Sumatera", CreatedAt = now },
+                new Province { Id = 11, CountryId = 1, Name = "Sumatera Barat", Island = "Sumatera", CreatedAt = now },
+                new Province { Id = 12, CountryId = 1, Name = "Sumatera Selatan", Island = "Sumatera", CreatedAt = now },
+                new Province { Id = 13, CountryId = 1, Name = "Lampung", Island = "Sumatera", CreatedAt = now },
+                new Province { Id = 14, CountryId = 1, Name = "Kalimantan Barat", Island = "Kalimantan", CreatedAt = now },
+                new Province { Id = 15, CountryId = 1, Name = "Kalimantan Timur", Island = "Kalimantan", CreatedAt = now },
+                new Province { Id = 16, CountryId = 1, Name = "Sulawesi Selatan", Island = "Sulawesi", CreatedAt = now },
+                new Province { Id = 17, CountryId = 1, Name = "Sulawesi Utara", Island = "Sulawesi", CreatedAt = now },
+                new Province { Id = 18, CountryId = 1, Name = "Nusa Tenggara Barat", Island = "Lombok", CreatedAt = now },
+                new Province { Id = 19, CountryId = 1, Name = "Nusa Tenggara Timur", Island = "Timor", CreatedAt = now },
+                new Province { Id = 20, CountryId = 1, Name = "Papua", Island = "Papua", CreatedAt = now }
             );
 
             modelBuilder.Entity<City>().HasData(
@@ -428,14 +432,185 @@ namespace Perdin.WebApi.Data
                 new City { Id = 10, ProvinceId = 6, Name = "Tangerang", Latitude = -6.1702m, Longitude = 106.6403m, CreatedAt = now },
                 new City { Id = 11, ProvinceId = 7, Name = "Denpasar", Latitude = -8.6705m, Longitude = 115.2126m, CreatedAt = now },
                 new City { Id = 12, ProvinceId = 8, Name = "Medan", Latitude = 3.5952m, Longitude = 98.6722m, CreatedAt = now },
-                new City { Id = 13, ProvinceId = 9, Name = "Kuala Lumpur City", Latitude = 3.1390m, Longitude = 101.6869m, CreatedAt = now },
-                new City { Id = 14, ProvinceId = 10, Name = "Petaling Jaya", Latitude = 3.1073m, Longitude = 101.6067m, CreatedAt = now },
-                new City { Id = 15, ProvinceId = 11, Name = "Singapore City", Latitude = 1.3521m, Longitude = 103.8198m, CreatedAt = now },
-                new City { Id = 16, ProvinceId = 12, Name = "Bangkok City", Latitude = 13.7563m, Longitude = 100.5018m, CreatedAt = now },
-                new City { Id = 17, ProvinceId = 15, Name = "Shinjuku", Latitude = 35.6938m, Longitude = 139.7034m, CreatedAt = now },
-                new City { Id = 18, ProvinceId = 16, Name = "Gangnam", Latitude = 37.4979m, Longitude = 127.0276m, CreatedAt = now },
-                new City { Id = 19, ProvinceId = 18, Name = "Los Angeles", Latitude = 34.0522m, Longitude = -118.2437m, CreatedAt = now },
-                new City { Id = 20, ProvinceId = 20, Name = "London City", Latitude = 51.5074m, Longitude = -0.1278m, CreatedAt = now }
+                new City { Id = 13, ProvinceId = 9, Name = "Pekanbaru", Latitude = 0.5074m, Longitude = 101.4478m, CreatedAt = now },
+                new City { Id = 14, ProvinceId = 10, Name = "Batam", Latitude = 1.1301m, Longitude = 104.0531m, CreatedAt = now },
+                new City { Id = 15, ProvinceId = 11, Name = "Padang", Latitude = -0.9471m, Longitude = 100.4172m, CreatedAt = now },
+                new City { Id = 16, ProvinceId = 12, Name = "Palembang", Latitude = -2.9909m, Longitude = 104.7567m, CreatedAt = now },
+                new City { Id = 17, ProvinceId = 13, Name = "Bandar Lampung", Latitude = -5.3971m, Longitude = 105.2668m, CreatedAt = now },
+                new City { Id = 18, ProvinceId = 14, Name = "Pontianak", Latitude = -0.0263m, Longitude = 109.3425m, CreatedAt = now },
+                new City { Id = 19, ProvinceId = 15, Name = "Samarinda", Latitude = -0.5022m, Longitude = 117.1536m, CreatedAt = now },
+                new City { Id = 20, ProvinceId = 16, Name = "Makassar", Latitude = -5.1476m, Longitude = 119.4327m, CreatedAt = now }
+            );
+
+            modelBuilder.Entity<BusinessTripRequest>().HasData(
+                new BusinessTripRequest
+                {
+                    Id = 1,
+                    RequestNumber = "PERDIN/20260701/0001",
+                    UserId = 2,
+                    DepartureDate = new DateOnly(2026, 7, 1),
+                    ReturnDate = new DateOnly(2026, 7, 4),
+                    OriginCityId = 1,
+                    DestinationCityId = 2,
+                    DestinationCountryId = 1,
+                    DurationInDays = 3,
+                    Status = "reviewed",
+                    Purpose = "Meeting Internal",
+                    PocketMoney = 0,
+                    CreatedAt = now
+                },
+                new BusinessTripRequest
+                {
+                    Id = 2,
+                    RequestNumber = "PERDIN/20260701/0002",
+                    UserId = 4,
+                    DepartureDate = new DateOnly(2026, 7, 1),
+                    ReturnDate = new DateOnly(2026, 7, 3),
+                    OriginCityId = 1,
+                    DestinationCityId = 3,
+                    DestinationCountryId = 1,
+                    DurationInDays = 2,
+                    Status = "approved",
+                    Purpose = "Kunjungan Cabang Bandung",
+                    PocketMoney = 500000,
+                    ApproverId = 1,
+                    ApprovedAt = now,
+                    CreatedAt = now
+                },
+                new BusinessTripRequest
+                {
+                    Id = 3,
+                    RequestNumber = "PERDIN/20260702/0001",
+                    UserId = 5,
+                    DepartureDate = new DateOnly(2026, 7, 5),
+                    ReturnDate = new DateOnly(2026, 7, 7),
+                    OriginCityId = 3,
+                    DestinationCityId = 4,
+                    DestinationCountryId = 1,
+                    DurationInDays = 2,
+                    Status = "reviewed",
+                    Purpose = "Audit Kebun Bogor",
+                    PocketMoney = 400000,
+                    CreatedAt = now
+                },
+                new BusinessTripRequest
+                {
+                    Id = 4,
+                    RequestNumber = "PERDIN/20260702/0002",
+                    UserId = 6,
+                    DepartureDate = new DateOnly(2026, 7, 6),
+                    ReturnDate = new DateOnly(2026, 7, 10),
+                    OriginCityId = 1,
+                    DestinationCityId = 11,
+                    DestinationCountryId = 1,
+                    DurationInDays = 4,
+                    Status = "reviewed",
+                    Purpose = "Rapat Koordinasi Nasional Bali",
+                    PocketMoney = 1200000,
+                    CreatedAt = now
+                },
+                new BusinessTripRequest
+                {
+                    Id = 5,
+                    RequestNumber = "PERDIN/20260703/0001",
+                    UserId = 8,
+                    DepartureDate = new DateOnly(2026, 7, 10),
+                    ReturnDate = new DateOnly(2026, 7, 15),
+                    OriginCityId = 1,
+                    DestinationCityId = null,
+                    DestinationCountryId = 3,
+                    DurationInDays = 5,
+                    Status = "approved",
+                    Purpose = "IT Conference Singapore",
+                    PocketMoney = 4000000,
+                    ApproverId = 3,
+                    ApprovedAt = now,
+                    CreatedAt = now
+                },
+                new BusinessTripRequest
+                {
+                    Id = 6,
+                    RequestNumber = "PERDIN/20260703/0002",
+                    UserId = 10,
+                    DepartureDate = new DateOnly(2026, 7, 12),
+                    ReturnDate = new DateOnly(2026, 7, 18),
+                    OriginCityId = 1,
+                    DestinationCityId = null,
+                    DestinationCountryId = 8,
+                    DurationInDays = 6,
+                    Status = "rejected",
+                    Purpose = "Studi Banding Sistem Kereta",
+                    PocketMoney = 4800000,
+                    ApproverId = 1,
+                    ApprovedAt = now,
+                    CreatedAt = now
+                },
+                new BusinessTripRequest
+                {
+                    Id = 7,
+                    RequestNumber = "PERDIN/20260704/0001",
+                    UserId = 2,
+                    DepartureDate = new DateOnly(2026, 7, 15),
+                    ReturnDate = new DateOnly(2026, 7, 17),
+                    OriginCityId = 8,
+                    DestinationCityId = 9,
+                    DestinationCountryId = 1,
+                    DurationInDays = 2,
+                    Status = "reviewed",
+                    Purpose = "Sosialisasi SOP Baru",
+                    PocketMoney = 400000,
+                    CreatedAt = now
+                },
+                new BusinessTripRequest
+                {
+                    Id = 8,
+                    RequestNumber = "PERDIN/20260704/0002",
+                    UserId = 4,
+                    DepartureDate = new DateOnly(2026, 7, 20),
+                    ReturnDate = new DateOnly(2026, 7, 25),
+                    OriginCityId = 12,
+                    DestinationCityId = 1,
+                    DestinationCountryId = 1,
+                    DurationInDays = 5,
+                    Status = "reviewed",
+                    Purpose = "General Meeting Direksi",
+                    PocketMoney = 1500000,
+                    CreatedAt = now
+                },
+                new BusinessTripRequest
+                {
+                    Id = 9,
+                    RequestNumber = "PERDIN/20260705/0001",
+                    UserId = 5,
+                    DepartureDate = new DateOnly(2026, 7, 22),
+                    ReturnDate = new DateOnly(2026, 7, 26),
+                    OriginCityId = 1,
+                    DestinationCityId = null,
+                    DestinationCountryId = 2,
+                    DurationInDays = 4,
+                    Status = "approved",
+                    Purpose = "Negosiasi Kontrak Vendor Malaysia",
+                    PocketMoney = 3200000,
+                    ApproverId = 3,
+                    ApprovedAt = now,
+                    CreatedAt = now
+                },
+                new BusinessTripRequest
+                {
+                    Id = 10,
+                    RequestNumber = "PERDIN/20260705/0002",
+                    UserId = 6,
+                    DepartureDate = new DateOnly(2026, 7, 28),
+                    ReturnDate = new DateOnly(2026, 8, 4),
+                    OriginCityId = 1,
+                    DestinationCityId = null,
+                    DestinationCountryId = 12,
+                    DurationInDays = 7,
+                    Status = "reviewed",
+                    Purpose = "Pelatihan Manajemen Risiko London",
+                    PocketMoney = 5600000,
+                    CreatedAt = now
+                }
             );
         }
     }

@@ -18,7 +18,7 @@ namespace Perdin.WebApi.Models
 
         public string Status { get; set; } = "reviewed";
 
-        public int ApproverId { get; set; }
+        public int? ApproverId { get; set; }
 
         public string Purpose { get; set; } = null!;
 
@@ -31,7 +31,7 @@ namespace Perdin.WebApi.Models
 
         // Navigation properties
         public User User { get; set; } = null!;
-        public User Approver { get; set; } = null!;
+        public User? Approver { get; set; }
         public City OriginCity { get; set; } = null!;
         public City? DestinationCity { get; set; }
         public Country DestinationCountry { get; set; } = null!;

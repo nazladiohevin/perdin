@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Perdin.WebApi.Data;
 
@@ -11,9 +12,11 @@ using Perdin.WebApi.Data;
 namespace Perdin.WebApi.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260710065428_MakeApproverIdNullableAndAddProvinceIsland")]
+    partial class MakeApproverIdNullableAndAddProvinceIsland
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -116,172 +119,6 @@ namespace Perdin.WebApi.Migrations
                     b.ToTable("business_trip_requests", null, t =>
                         {
                             t.HasCheckConstraint("CK_BusinessTrip_Status", "status IN ('reviewed','rejected','approved')");
-                        });
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            DepartureDate = new DateOnly(2026, 7, 1),
-                            DestinationCityId = 2,
-                            DestinationCountryId = 1,
-                            DurationInDays = 3,
-                            OriginCityId = 1,
-                            PocketMoney = 0,
-                            Purpose = "Meeting Internal",
-                            RequestNumber = "PERDIN/20260701/0001",
-                            ReturnDate = new DateOnly(2026, 7, 4),
-                            Status = "reviewed",
-                            UserId = 2
-                        },
-                        new
-                        {
-                            Id = 2,
-                            ApprovedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            ApproverId = 1,
-                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            DepartureDate = new DateOnly(2026, 7, 1),
-                            DestinationCityId = 3,
-                            DestinationCountryId = 1,
-                            DurationInDays = 2,
-                            OriginCityId = 1,
-                            PocketMoney = 500000,
-                            Purpose = "Kunjungan Cabang Bandung",
-                            RequestNumber = "PERDIN/20260701/0002",
-                            ReturnDate = new DateOnly(2026, 7, 3),
-                            Status = "approved",
-                            UserId = 4
-                        },
-                        new
-                        {
-                            Id = 3,
-                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            DepartureDate = new DateOnly(2026, 7, 5),
-                            DestinationCityId = 4,
-                            DestinationCountryId = 1,
-                            DurationInDays = 2,
-                            OriginCityId = 3,
-                            PocketMoney = 400000,
-                            Purpose = "Audit Kebun Bogor",
-                            RequestNumber = "PERDIN/20260702/0001",
-                            ReturnDate = new DateOnly(2026, 7, 7),
-                            Status = "reviewed",
-                            UserId = 5
-                        },
-                        new
-                        {
-                            Id = 4,
-                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            DepartureDate = new DateOnly(2026, 7, 6),
-                            DestinationCityId = 11,
-                            DestinationCountryId = 1,
-                            DurationInDays = 4,
-                            OriginCityId = 1,
-                            PocketMoney = 1200000,
-                            Purpose = "Rapat Koordinasi Nasional Bali",
-                            RequestNumber = "PERDIN/20260702/0002",
-                            ReturnDate = new DateOnly(2026, 7, 10),
-                            Status = "reviewed",
-                            UserId = 6
-                        },
-                        new
-                        {
-                            Id = 5,
-                            ApprovedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            ApproverId = 3,
-                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            DepartureDate = new DateOnly(2026, 7, 10),
-                            DestinationCountryId = 3,
-                            DurationInDays = 5,
-                            OriginCityId = 1,
-                            PocketMoney = 4000000,
-                            Purpose = "IT Conference Singapore",
-                            RequestNumber = "PERDIN/20260703/0001",
-                            ReturnDate = new DateOnly(2026, 7, 15),
-                            Status = "approved",
-                            UserId = 8
-                        },
-                        new
-                        {
-                            Id = 6,
-                            ApprovedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            ApproverId = 1,
-                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            DepartureDate = new DateOnly(2026, 7, 12),
-                            DestinationCountryId = 8,
-                            DurationInDays = 6,
-                            OriginCityId = 1,
-                            PocketMoney = 4800000,
-                            Purpose = "Studi Banding Sistem Kereta",
-                            RequestNumber = "PERDIN/20260703/0002",
-                            ReturnDate = new DateOnly(2026, 7, 18),
-                            Status = "rejected",
-                            UserId = 10
-                        },
-                        new
-                        {
-                            Id = 7,
-                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            DepartureDate = new DateOnly(2026, 7, 15),
-                            DestinationCityId = 9,
-                            DestinationCountryId = 1,
-                            DurationInDays = 2,
-                            OriginCityId = 8,
-                            PocketMoney = 400000,
-                            Purpose = "Sosialisasi SOP Baru",
-                            RequestNumber = "PERDIN/20260704/0001",
-                            ReturnDate = new DateOnly(2026, 7, 17),
-                            Status = "reviewed",
-                            UserId = 2
-                        },
-                        new
-                        {
-                            Id = 8,
-                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            DepartureDate = new DateOnly(2026, 7, 20),
-                            DestinationCityId = 1,
-                            DestinationCountryId = 1,
-                            DurationInDays = 5,
-                            OriginCityId = 12,
-                            PocketMoney = 1500000,
-                            Purpose = "General Meeting Direksi",
-                            RequestNumber = "PERDIN/20260704/0002",
-                            ReturnDate = new DateOnly(2026, 7, 25),
-                            Status = "reviewed",
-                            UserId = 4
-                        },
-                        new
-                        {
-                            Id = 9,
-                            ApprovedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            ApproverId = 3,
-                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            DepartureDate = new DateOnly(2026, 7, 22),
-                            DestinationCountryId = 2,
-                            DurationInDays = 4,
-                            OriginCityId = 1,
-                            PocketMoney = 3200000,
-                            Purpose = "Negosiasi Kontrak Vendor Malaysia",
-                            RequestNumber = "PERDIN/20260705/0001",
-                            ReturnDate = new DateOnly(2026, 7, 26),
-                            Status = "approved",
-                            UserId = 5
-                        },
-                        new
-                        {
-                            Id = 10,
-                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            DepartureDate = new DateOnly(2026, 7, 28),
-                            DestinationCountryId = 12,
-                            DurationInDays = 7,
-                            OriginCityId = 1,
-                            PocketMoney = 5600000,
-                            Purpose = "Pelatihan Manajemen Risiko London",
-                            RequestNumber = "PERDIN/20260705/0002",
-                            ReturnDate = new DateOnly(2026, 8, 4),
-                            Status = "reviewed",
-                            UserId = 6
                         });
                 });
 
@@ -440,73 +277,73 @@ namespace Perdin.WebApi.Migrations
                         {
                             Id = 13,
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            Latitude = 0.5074m,
-                            Longitude = 101.4478m,
-                            Name = "Pekanbaru",
+                            Latitude = 3.1390m,
+                            Longitude = 101.6869m,
+                            Name = "Kuala Lumpur City",
                             ProvinceId = 9
                         },
                         new
                         {
                             Id = 14,
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            Latitude = 1.1301m,
-                            Longitude = 104.0531m,
-                            Name = "Batam",
+                            Latitude = 3.1073m,
+                            Longitude = 101.6067m,
+                            Name = "Petaling Jaya",
                             ProvinceId = 10
                         },
                         new
                         {
                             Id = 15,
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            Latitude = -0.9471m,
-                            Longitude = 100.4172m,
-                            Name = "Padang",
+                            Latitude = 1.3521m,
+                            Longitude = 103.8198m,
+                            Name = "Singapore City",
                             ProvinceId = 11
                         },
                         new
                         {
                             Id = 16,
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            Latitude = -2.9909m,
-                            Longitude = 104.7567m,
-                            Name = "Palembang",
+                            Latitude = 13.7563m,
+                            Longitude = 100.5018m,
+                            Name = "Bangkok City",
                             ProvinceId = 12
                         },
                         new
                         {
                             Id = 17,
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            Latitude = -5.3971m,
-                            Longitude = 105.2668m,
-                            Name = "Bandar Lampung",
-                            ProvinceId = 13
+                            Latitude = 35.6938m,
+                            Longitude = 139.7034m,
+                            Name = "Shinjuku",
+                            ProvinceId = 15
                         },
                         new
                         {
                             Id = 18,
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            Latitude = -0.0263m,
-                            Longitude = 109.3425m,
-                            Name = "Pontianak",
-                            ProvinceId = 14
+                            Latitude = 37.4979m,
+                            Longitude = 127.0276m,
+                            Name = "Gangnam",
+                            ProvinceId = 16
                         },
                         new
                         {
                             Id = 19,
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            Latitude = -0.5022m,
-                            Longitude = 117.1536m,
-                            Name = "Samarinda",
-                            ProvinceId = 15
+                            Latitude = 34.0522m,
+                            Longitude = -118.2437m,
+                            Name = "Los Angeles",
+                            ProvinceId = 18
                         },
                         new
                         {
                             Id = 20,
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            Latitude = -5.1476m,
-                            Longitude = 119.4327m,
-                            Name = "Makassar",
-                            ProvinceId = 16
+                            Latitude = 51.5074m,
+                            Longitude = -0.1278m,
+                            Name = "London City",
+                            ProvinceId = 20
                         });
                 });
 
@@ -794,98 +631,98 @@ namespace Perdin.WebApi.Migrations
                         new
                         {
                             Id = 9,
-                            CountryId = 1,
+                            CountryId = 2,
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            Island = "Sumatera",
-                            Name = "Riau"
+                            Island = "Luar Negeri",
+                            Name = "Kuala Lumpur"
                         },
                         new
                         {
                             Id = 10,
-                            CountryId = 1,
+                            CountryId = 2,
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            Island = "Sumatera",
-                            Name = "Kepulauan Riau"
+                            Island = "Luar Negeri",
+                            Name = "Selangor"
                         },
                         new
                         {
                             Id = 11,
-                            CountryId = 1,
+                            CountryId = 3,
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            Island = "Sumatera",
-                            Name = "Sumatera Barat"
+                            Island = "Luar Negeri",
+                            Name = "Central Singapore"
                         },
                         new
                         {
                             Id = 12,
-                            CountryId = 1,
+                            CountryId = 4,
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            Island = "Sumatera",
-                            Name = "Sumatera Selatan"
+                            Island = "Luar Negeri",
+                            Name = "Bangkok"
                         },
                         new
                         {
                             Id = 13,
-                            CountryId = 1,
+                            CountryId = 5,
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            Island = "Sumatera",
-                            Name = "Lampung"
+                            Island = "Luar Negeri",
+                            Name = "Hanoi"
                         },
                         new
                         {
                             Id = 14,
-                            CountryId = 1,
+                            CountryId = 6,
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            Island = "Kalimantan",
-                            Name = "Kalimantan Barat"
+                            Island = "Luar Negeri",
+                            Name = "Metro Manila"
                         },
                         new
                         {
                             Id = 15,
-                            CountryId = 1,
+                            CountryId = 8,
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            Island = "Kalimantan",
-                            Name = "Kalimantan Timur"
+                            Island = "Luar Negeri",
+                            Name = "Tokyo"
                         },
                         new
                         {
                             Id = 16,
-                            CountryId = 1,
+                            CountryId = 9,
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            Island = "Sulawesi",
-                            Name = "Sulawesi Selatan"
+                            Island = "Luar Negeri",
+                            Name = "Seoul"
                         },
                         new
                         {
                             Id = 17,
-                            CountryId = 1,
+                            CountryId = 10,
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            Island = "Sulawesi",
-                            Name = "Sulawesi Utara"
+                            Island = "Luar Negeri",
+                            Name = "Beijing"
                         },
                         new
                         {
                             Id = 18,
-                            CountryId = 1,
+                            CountryId = 11,
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            Island = "Lombok",
-                            Name = "Nusa Tenggara Barat"
+                            Island = "Luar Negeri",
+                            Name = "California"
                         },
                         new
                         {
                             Id = 19,
-                            CountryId = 1,
+                            CountryId = 11,
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            Island = "Timor",
-                            Name = "Nusa Tenggara Timur"
+                            Island = "Luar Negeri",
+                            Name = "New York"
                         },
                         new
                         {
                             Id = 20,
-                            CountryId = 1,
+                            CountryId = 12,
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            Island = "Papua",
-                            Name = "Papua"
+                            Island = "Luar Negeri",
+                            Name = "Greater London"
                         });
                 });
 
