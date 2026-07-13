@@ -1,4 +1,5 @@
 @page "/perdin/{Id}/approval"
+@attribute [Authorize(Roles = "ADMIN,SDM")]
 <PageTitle>Approval Pengajuan Perjalanan Dinas</PageTitle>
 
 @code {
