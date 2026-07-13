@@ -1,0 +1,138 @@
+@page "/perdin/{Id}"
+<PageTitle>Detail Pengajuan Perjalanan Dinas</PageTitle>
+
+@code {
+    [Parameter] public string Id { get; set; }
+}
+
+<div x-data="{ isLuarNegeri: false }">
+
+    <!-- Section 1: Header -->
+    <div class="mb-6 flex items-center justify-between">
+        <h2 class="text-lg font-semibold text-gray-800 dark:text-white/90">
+            Detail Pengajuan Perjalanan Dinas
+        </h2>
+        <a href="/perdin"
+           class="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 shadow-theme-xs hover:bg-gray-50 hover:text-gray-800 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-white/[0.03] dark:hover:text-gray-200">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="19" y1="12" x2="5" y2="12"></line>
+                <polyline points="12 19 5 12 12 5"></polyline>
+            </svg>
+            Kembali
+        </a>
+    </div>
+
+    <!-- Section 2: Form (Readonly) -->
+    <div class="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03]">
+        <div class="space-y-6 p-5 sm:p-6">
+
+            <!-- Tanggal Berangkat & Pulang (2 kolom) -->
+            <div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
+                <div>
+                    <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
+                        Tanggal Keberangkatan
+                    </label>
+                    <input
+                        type="date"
+                        value="2025-07-15"
+                        readonly
+                        disabled
+                        class="dark:bg-dark-900 shadow-theme-xs h-11 w-full appearance-none rounded-lg border border-gray-300 bg-transparent bg-none px-4 py-2.5 text-sm text-gray-800 focus:outline-hidden disabled:border-gray-100 disabled:bg-gray-50 disabled:text-gray-500 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:disabled:border-gray-800 dark:disabled:bg-white/[0.03] dark:disabled:text-gray-500"
+                    />
+                </div>
+                <div>
+                    <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
+                        Tanggal Kepulangan
+                    </label>
+                    <input
+                        type="date"
+                        value="2025-07-18"
+                        readonly
+                        disabled
+                        class="dark:bg-dark-900 shadow-theme-xs h-11 w-full appearance-none rounded-lg border border-gray-300 bg-transparent bg-none px-4 py-2.5 text-sm text-gray-800 focus:outline-hidden disabled:border-gray-100 disabled:bg-gray-50 disabled:text-gray-500 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:disabled:border-gray-800 dark:disabled:bg-white/[0.03] dark:disabled:text-gray-500"
+                    />
+                </div>
+            </div>
+
+            <!-- Perjalanan info -->
+            <div>
+                <p class="mb-3 text-sm font-medium text-gray-800 dark:text-white/90">Perjalanan</p>
+                <div class="flex items-center text-sm font-medium text-gray-500 dark:text-gray-400">
+                    <div class="mr-3 flex h-5 w-5 items-center justify-center rounded-md border-[1.25px] bg-transparent border-gray-300 dark:border-gray-700 opacity-50">
+                        <span class="opacity-0">
+                            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M11.6666 3.5L5.24992 9.91667L2.33325 7" stroke="white" stroke-width="1.94437" stroke-linecap="round" stroke-linejoin="round" />
+                            </svg>
+                        </span>
+                    </div>
+                    Perjalanan Luar Negeri
+                </div>
+            </div>
+
+            <!-- Kota Asal -->
+            <div>
+                <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
+                    Kota Asal
+                </label>
+                <input
+                    type="text"
+                    value="Jakarta"
+                    readonly
+                    disabled
+                    class="dark:bg-dark-900 shadow-theme-xs h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 focus:outline-hidden disabled:border-gray-100 disabled:bg-gray-50 disabled:text-gray-500 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:disabled:border-gray-800 dark:disabled:bg-white/[0.03] dark:disabled:text-gray-500"
+                />
+            </div>
+
+            <!-- Kota Tujuan -->
+            <div x-show="!isLuarNegeri">
+                <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
+                    Kota Tujuan
+                </label>
+                <input
+                    type="text"
+                    value="Surabaya"
+                    readonly
+                    disabled
+                    class="dark:bg-dark-900 shadow-theme-xs h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 focus:outline-hidden disabled:border-gray-100 disabled:bg-gray-50 disabled:text-gray-500 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:disabled:border-gray-800 dark:disabled:bg-white/[0.03] dark:disabled:text-gray-500"
+                />
+            </div>
+
+            <!-- Negara Tujuan (hidden by default for this dummy) -->
+            <div x-show="isLuarNegeri">
+                <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
+                    Negara Tujuan
+                </label>
+                <input
+                    type="text"
+                    value=""
+                    readonly
+                    disabled
+                    class="dark:bg-dark-900 shadow-theme-xs h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 focus:outline-hidden disabled:border-gray-100 disabled:bg-gray-50 disabled:text-gray-500 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:disabled:border-gray-800 dark:disabled:bg-white/[0.03] dark:disabled:text-gray-500"
+                />
+            </div>
+
+            <!-- Tujuan -->
+            <div>
+                <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
+                    Tujuan
+                </label>
+                <textarea
+                    rows="5"
+                    readonly
+                    disabled
+                    class="dark:bg-dark-900 shadow-theme-xs w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 focus:outline-hidden disabled:border-gray-100 disabled:bg-gray-50 disabled:text-gray-500 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:disabled:border-gray-800 dark:disabled:bg-white/[0.03] dark:disabled:text-gray-500"
+                >Menghadiri rapat koordinasi proyek pembangunan infrastruktur di kantor cabang Surabaya.</textarea>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Section 3: Total Hari -->
+    <div class="mt-6 rounded-2xl border border-gray-200 bg-white p-5 sm:p-6 dark:border-gray-800 dark:bg-white/[0.03]">
+        <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Total perjalanan dinas</p>
+        <p class="mt-1 text-2xl font-semibold text-gray-800 dark:text-white/90">3 Hari</p>
+    </div>
+
+    <!-- Section 4: Tidak ada tombol (view only) -->
+
+</div>

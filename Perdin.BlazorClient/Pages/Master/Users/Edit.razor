@@ -1,0 +1,121 @@
+@page "/users/{id}/edit"
+<PageTitle>Edit Pengguna</PageTitle>
+
+<!-- Section 1: Header -->
+<div class="mb-6 flex items-center justify-between">
+    <h2 class="text-lg font-semibold text-gray-800 dark:text-white/90">
+        Edit Pengguna
+    </h2>
+    <a href="/users"
+       class="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 shadow-theme-xs hover:bg-gray-50 hover:text-gray-800 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-white/[0.03] dark:hover:text-gray-200">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="19" y1="12" x2="5" y2="12"></line>
+            <polyline points="12 19 5 12 12 5"></polyline>
+        </svg>
+        Kembali
+    </a>
+</div>
+
+<!-- Section 2: Form Input -->
+<div class="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03]">
+    <div class="space-y-6 p-5 sm:p-6">
+        <div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
+            <div>
+                <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">Nama</label>
+                <input type="text" required value="John Doe"
+                       class="h-11 w-full rounded-lg border appearance-none px-4 py-2.5 text-sm shadow-theme-xs placeholder:text-gray-400 focus:outline-none focus:ring-0 border-gray-300 bg-white text-gray-800 focus:border-brand-500 focus:shadow-focus-ring dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:focus:border-brand-500" />
+            </div>
+            <div>
+                <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">Email</label>
+                <input type="email" required value="john@example.com"
+                       class="h-11 w-full rounded-lg border appearance-none px-4 py-2.5 text-sm shadow-theme-xs placeholder:text-gray-400 focus:outline-none focus:ring-0 border-gray-300 bg-white text-gray-800 focus:border-brand-500 focus:shadow-focus-ring dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:focus:border-brand-500" />
+            </div>
+            <div>
+                <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">Password</label>
+                <input type="password" required value="secret123"
+                       class="h-11 w-full rounded-lg border appearance-none px-4 py-2.5 text-sm shadow-theme-xs placeholder:text-gray-400 focus:outline-none focus:ring-0 border-gray-300 bg-white text-gray-800 focus:border-brand-500 focus:shadow-focus-ring dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:focus:border-brand-500" />
+            </div>
+            <div>
+                <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">Roles</label>
+                <!-- Blazor implementation of multiple select -->
+                <div class="relative">
+                    <button @onclick="ToggleDropdown" type="button" class="flex h-11 w-full items-center justify-between rounded-lg border appearance-none px-4 py-2.5 text-sm shadow-theme-xs border-gray-300 bg-white text-gray-800 focus:border-brand-500 focus:shadow-focus-ring dark:border-gray-700 dark:bg-gray-900 dark:text-white/90">
+                        <div class="flex flex-wrap gap-2">
+                            @if (!selectedRoles.Any())
+                            {
+                                <span class="text-gray-400">Pilih Role...</span>
+                            }
+                            else
+                            {
+                                @foreach (var role in selectedRoles)
+                                {
+                                    <span class="inline-flex items-center gap-1 rounded bg-gray-100 px-2 py-0.5 text-xs text-gray-600 dark:bg-gray-800 dark:text-gray-300">
+                                        @role
+                                        <span @onclick="() => ToggleRole(role)" @onclick:stopPropagation class="cursor-pointer hover:text-error-500">&times;</span>
+                                    </span>
+                                }
+                            }
+                        </div>
+                        <svg class="h-4 w-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                    </button>
+                    
+                    @if (isDropdownOpen)
+                    {
+                        <div class="absolute z-10 mt-1 w-full rounded-lg border border-gray-200 bg-white py-1 shadow-lg dark:border-gray-700 dark:bg-gray-800">
+                            @foreach (var role in availableRoles)
+                            {
+                                <label class="flex cursor-pointer items-center px-4 py-2 hover:bg-gray-50 dark:hover:bg-gray-700">
+                                    <input type="checkbox" checked="@selectedRoles.Contains(role)" @onchange="(e) => CheckRole(e, role)" class="mr-3 rounded border-gray-300 text-brand-500 focus:ring-brand-500" />
+                                    <span class="text-sm text-gray-700 dark:text-gray-300">@role</span>
+                                </label>
+                            }
+                        </div>
+                        <!-- Backdrop -->
+                        <div class="fixed inset-0 z-0" @onclick="ToggleDropdown"></div>
+                    }
+                </div>
+            </div>
+        </div>
+        
+        <!-- Section 3: Button -->
+        <div class="flex justify-end pt-4">
+            <button class="inline-flex items-center gap-2 rounded-lg bg-brand-500 px-6 py-3 text-sm font-medium text-white shadow-theme-xs hover:bg-brand-600">
+                Edit
+            </button>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter] public string Id { get; set; } = "";
+    
+    private bool isDropdownOpen = false;
+    private List<string> availableRoles = new() { "Admin", "User", "Manager" };
+    private HashSet<string> selectedRoles = new() { "Admin", "User" };
+
+    private void ToggleDropdown()
+    {
+        isDropdownOpen = !isDropdownOpen;
+    }
+
+    private void ToggleRole(string role)
+    {
+        if (selectedRoles.Contains(role))
+        {
+            selectedRoles.Remove(role);
+        }
+        else
+        {
+            selectedRoles.Add(role);
+        }
+    }
+
+    private void CheckRole(ChangeEventArgs e, string role)
+    {
+        bool isChecked = bool.TryParse(e.Value?.ToString(), out var parsed) && parsed;
+        if (isChecked)
+            selectedRoles.Add(role);
+        else
+            selectedRoles.Remove(role);
+    }
+}
