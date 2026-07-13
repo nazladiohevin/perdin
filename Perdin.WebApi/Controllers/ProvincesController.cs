@@ -24,11 +24,13 @@ namespace Perdin.WebApi.Controllers
         public async Task<IActionResult> GetAllProvinces()
         {
             var provinces = await _context.Provinces
+                .OrderByDescending(p => p.CreatedAt)
                 .Select(p => new ProvinceResponse
                 {
                     Id = p.Id,
                     CountryId = p.CountryId,
                     Name = p.Name,
+                    Island = p.Island,
                     CreatedAt = p.CreatedAt,
                     UpdatedAt = p.UpdatedAt
                 })
@@ -54,6 +56,7 @@ namespace Perdin.WebApi.Controllers
                 Id = province.Id,
                 CountryId = province.CountryId,
                 Name = province.Name,
+                Island = province.Island,
                 CreatedAt = province.CreatedAt,
                 UpdatedAt = province.UpdatedAt,
                 Country = province.Country != null ? new CountryResponse
@@ -84,6 +87,7 @@ namespace Perdin.WebApi.Controllers
             var province = new Models.Province
             {
                 Name = request.Name,
+                Island = request.Island,
                 CountryId = request.CountryId,
                 CreatedAt = DateTime.UtcNow
             };
@@ -99,6 +103,7 @@ namespace Perdin.WebApi.Controllers
                 Id = province.Id,
                 CountryId = province.CountryId,
                 Name = province.Name,
+                Island = province.Island,
                 CreatedAt = province.CreatedAt,
                 UpdatedAt = province.UpdatedAt,
                 Country = province.Country != null ? new CountryResponse
@@ -136,6 +141,7 @@ namespace Perdin.WebApi.Controllers
             }
 
             province.Name = request.Name;
+            province.Island = request.Island;
             province.CountryId = request.CountryId;
             province.UpdatedAt = DateTime.UtcNow;
 
@@ -152,6 +158,7 @@ namespace Perdin.WebApi.Controllers
                 Id = province.Id,
                 CountryId = province.CountryId,
                 Name = province.Name,
+                Island = province.Island,
                 CreatedAt = province.CreatedAt,
                 UpdatedAt = province.UpdatedAt,
                 Country = province.Country != null ? new CountryResponse
