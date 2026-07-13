@@ -9,7 +9,7 @@ namespace Perdin.WebApi.Controllers
 {
     [ApiController]
     [Route("api/countries")]
-    [Authorize(Roles = "ADMIN")]
+    [Authorize]
     public class CountriesController : ControllerBase
     {
         private readonly AppDbContext _context;
@@ -20,6 +20,7 @@ namespace Perdin.WebApi.Controllers
         }
 
         [HttpGet]
+        [AllowAnonymous]
         public async Task<IActionResult> GetAllCountries()
         {
             var countries = await _context.Countries
@@ -37,6 +38,7 @@ namespace Perdin.WebApi.Controllers
         }
 
         [HttpGet("{id}")]
+        [AllowAnonymous]
         public async Task<IActionResult> GetCountry(int id)
         {
             var country = await _context.Countries.FindAsync(id);
@@ -59,6 +61,7 @@ namespace Perdin.WebApi.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = "ADMIN")]
         public async Task<IActionResult> CreateCountry([FromBody] CountryCreateRequest request)
         {
             if (!ModelState.IsValid)
@@ -93,6 +96,7 @@ namespace Perdin.WebApi.Controllers
         }
 
         [HttpPut("{id}")]
+        [Authorize(Roles = "ADMIN")]
         public async Task<IActionResult> UpdateCountry(int id, [FromBody] CountryUpdateRequest request)
         {
             if (!ModelState.IsValid)
@@ -129,6 +133,7 @@ namespace Perdin.WebApi.Controllers
         }
 
         [HttpDelete("{id}")]
+        [Authorize(Roles = "ADMIN")]
         public async Task<IActionResult> DeleteCountry(int id)
         {
             var country = await _context.Countries.FindAsync(id);
