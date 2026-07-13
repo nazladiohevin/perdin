@@ -1,0 +1,43 @@
+@if (Visible)
+{
+    <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-900/60 dark:bg-gray-950/70 backdrop-blur-xs">
+        <div class="relative w-full max-w-md rounded-2xl bg-white p-6 shadow-theme-xl dark:bg-gray-900 border border-gray-100 dark:border-gray-800">
+            <h3 class="mb-2 text-lg font-semibold text-gray-800 dark:text-white/90">
+                @(Title ?? "Konfirmasi Hapus")
+            </h3>
+            <p class="mb-6 text-sm text-gray-500 dark:text-gray-400">
+                @((MarkupString)Message)
+            </p>
+            <div class="flex justify-end gap-3">
+                <button 
+                    type="button"
+                    @onclick="OnCancel"
+                    class="rounded-lg border border-gray-300 bg-white px-4.5 py-2.5 text-sm font-medium text-gray-700 shadow-theme-xs hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-white/[0.03]"
+                >
+                    Batal
+                </button>
+                <button 
+                    type="button"
+                    @onclick="OnConfirm"
+                    disabled="@IsLoading"
+                    class="inline-flex items-center gap-2 rounded-lg bg-error-500 px-4.5 py-2.5 text-sm font-medium text-white shadow-theme-xs hover:bg-error-600 disabled:opacity-50"
+                >
+                    @if (IsLoading)
+                    {
+                        <span class="h-4 w-4 animate-spin rounded-full border-2 border-solid border-white border-t-transparent"></span>
+                    }
+                    Hapus
+                </button>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter] public bool Visible { get; set; }
+    [Parameter] public string? Title { get; set; }
+    [Parameter] public string Message { get; set; } = string.Empty;
+    [Parameter] public bool IsLoading { get; set; }
+    [Parameter] public EventCallback OnCancel { get; set; }
+    [Parameter] public EventCallback OnConfirm { get; set; }
+}

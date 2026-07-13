@@ -1,4 +1,5 @@
 @page "/users/{id}"
+@inject UserService UserService
 <PageTitle>Detail Pengguna</PageTitle>
 
 <!-- Section 1: Header -->
@@ -16,37 +17,100 @@
     </a>
 </div>
 
+@if (!string.IsNullOrEmpty(errorMessage))
+{
+    <Alert Type="error" Message="@errorMessage" OnClose="() => errorMessage = string.Empty" />
+}
+
 <!-- Section 2: Form Input -->
 <div class="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03]">
     <div class="space-y-6 p-5 sm:p-6">
-        <div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
-            <div>
-                <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">Nama</label>
-                <input type="text" readonly value="John Doe"
-                       class="h-11 w-full rounded-lg border appearance-none px-4 py-2.5 text-sm shadow-theme-xs placeholder:text-gray-400 focus:outline-none focus:ring-0 border-gray-300 bg-gray-50 text-gray-500 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400" />
+        @if (isLoading)
+        {
+            <div class="py-12 text-center text-gray-500">
+                <span class="inline-block h-6 w-6 animate-spin rounded-full border-2 border-solid border-brand-500 border-t-transparent"></span>
+                <span class="ml-2">Memuat detail pengguna...</span>
             </div>
-            <div>
-                <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">Email</label>
-                <input type="email" readonly value="john@example.com"
-                       class="h-11 w-full rounded-lg border appearance-none px-4 py-2.5 text-sm shadow-theme-xs placeholder:text-gray-400 focus:outline-none focus:ring-0 border-gray-300 bg-gray-50 text-gray-500 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400" />
-            </div>
-            <div>
-                <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">Roles</label>
-                <div class="flex h-11 w-full items-center rounded-lg border px-4 py-2.5 border-gray-300 bg-gray-50 dark:border-gray-700 dark:bg-gray-800">
-                    <div class="flex flex-wrap gap-2">
-                        <span class="inline-flex items-center gap-1 rounded bg-gray-200 px-2 py-0.5 text-xs text-gray-600 dark:bg-gray-700 dark:text-gray-300">
-                            Admin
-                        </span>
-                        <span class="inline-flex items-center gap-1 rounded bg-gray-200 px-2 py-0.5 text-xs text-gray-600 dark:bg-gray-700 dark:text-gray-300">
-                            User
-                        </span>
+        }
+        else if (user != null)
+        {
+            <div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
+                <div>
+                    <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">Nama</label>
+                    <input type="text" readonly value="@user.Name"
+                           class="h-11 w-full rounded-lg border appearance-none px-4 py-2.5 text-sm shadow-theme-xs focus:outline-none focus:ring-0 border-gray-300 bg-gray-50 text-gray-500 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400" />
+                </div>
+                <div>
+                    <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">Username</label>
+                    <input type="text" readonly value="@user.Username"
+                           class="h-11 w-full rounded-lg border appearance-none px-4 py-2.5 text-sm shadow-theme-xs focus:outline-none focus:ring-0 border-gray-300 bg-gray-50 text-gray-500 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400" />
+                </div>
+                <div>
+                    <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">Email</label>
+                    <input type="email" readonly value="@user.Email"
+                           class="h-11 w-full rounded-lg border appearance-none px-4 py-2.5 text-sm shadow-theme-xs focus:outline-none focus:ring-0 border-gray-300 bg-gray-50 text-gray-500 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400" />
+                </div>
+                <div>
+                    <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">Roles</label>
+                    <div class="flex h-11 w-full items-center rounded-lg border px-4 py-2.5 border-gray-300 bg-gray-50 dark:border-gray-700 dark:bg-gray-800">
+                        <div class="flex flex-wrap gap-2">
+                            @if (user.Roles == null || user.Roles.Count == 0)
+                            {
+                                <span class="text-xs text-gray-400">Tidak ada role</span>
+                            }
+                            else
+                            {
+                                @foreach (var role in user.Roles)
+                                {
+                                    <span class="inline-flex items-center gap-1 rounded bg-gray-200 px-2 py-0.5 text-xs text-gray-600 dark:bg-gray-700 dark:text-gray-300">
+                                        @role.Name
+                                    </span>
+                                }
+                            }
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
+        }
     </div>
 </div>
 
 @code {
     [Parameter] public string Id { get; set; } = "";
+
+    private bool isLoading = true;
+    private UserItem? user;
+    private string errorMessage = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (int.TryParse(Id, out var userId))
+        {
+            try
+            {
+                var result = await UserService.GetDetailAsync(userId);
+                if (result.Success && result.Data != null)
+                {
+                    user = result.Data;
+                }
+                else
+                {
+                    errorMessage = result.Message;
+                }
+            }
+            catch (Exception)
+            {
+                errorMessage = "Gagal memuat detail pengguna.";
+            }
+            finally
+            {
+                isLoading = false;
+            }
+        }
+        else
+        {
+            errorMessage = "ID Pengguna tidak valid.";
+            isLoading = false;
+        }
+    }
 }
