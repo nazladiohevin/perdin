@@ -10,7 +10,7 @@ namespace Perdin.WebApi.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize(Roles = "ADMIN")]
+    [Authorize(Roles = "ADMIN,SDM")]
     public class UsersController : ControllerBase
     {
         private readonly AppDbContext _context;
@@ -21,6 +21,7 @@ namespace Perdin.WebApi.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = "ADMIN")]
         public async Task<IActionResult> Create([FromBody] UserCreateRequest request)
         {
             if (!ModelState.IsValid)
@@ -124,6 +125,7 @@ namespace Perdin.WebApi.Controllers
         }
 
         [HttpPut("{id}")]
+        [Authorize(Roles = "ADMIN")]
         public async Task<IActionResult> Update(int id, [FromBody] UserUpdateRequest request)
         {
             if (!ModelState.IsValid)
@@ -187,6 +189,7 @@ namespace Perdin.WebApi.Controllers
         }
 
         [HttpDelete("{id}")]
+        [Authorize(Roles = "ADMIN")]
         public async Task<IActionResult> Delete(int id)
         {
             var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == id);
