@@ -1,13 +1,10 @@
 @page "/perdin/{Id}/edit"
+@inject BusinessTripRequestService PerdinService
+@inject AuthService AuthService
+@inject NavigationManager Navigation
 <PageTitle>Edit Pengajuan Perjalanan Dinas</PageTitle>
 
-@code {
-    [Parameter] public string Id { get; set; }
-}
-
 <div>
-
-    <!-- Section 1: Header -->
     <div class="mb-6 flex items-center justify-between">
         <h2 class="text-lg font-semibold text-gray-800 dark:text-white/90">
             Edit Pengajuan Perjalanan Dinas
@@ -22,119 +19,145 @@
         </a>
     </div>
 
-    <!-- Section 2: Form -->
-    <div class="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03]">
-        <div class="space-y-6 p-5 sm:p-6">
-
-            <!-- Tanggal Berangkat & Pulang (2 kolom) -->
-            <div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
-                <div>
-                    <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
-                        Tanggal Keberangkatan <span class="text-error-500">*</span>
-                    </label>
-                    <div class="relative">
-                        <input
-                            type="date"
-                            @bind="tglBerangkat"
-                            required
-                            onclick="this.showPicker()"
-                            class="dark:bg-dark-900 shadow-theme-xs focus:border-brand-300 focus:ring-brand-500/10 dark:focus:border-brand-800 h-11 w-full appearance-none rounded-lg border border-gray-300 bg-transparent bg-none px-4 py-2.5 text-sm text-gray-800 placeholder:text-gray-400 focus:ring-3 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30"
-                        />
+    @if (!string.IsNullOrEmpty(errorMessage))
+    {
+        <div class="mb-5 rounded-xl border border-error-500 bg-error-50 p-4 dark:border-error-500/30 dark:bg-error-500/15">
+            <div class="flex items-start justify-between gap-3">
+                <div class="flex items-start gap-3">
+                    <div class="-mt-0.5 text-error-500">
+                        <svg class="fill-current" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path fill-rule="evenodd" clip-rule="evenodd" d="M20.3499 12.0004C20.3499 16.612 16.6115 20.3504 11.9999 20.3504C7.38832 20.3504 3.6499 16.612 3.6499 12.0004C3.6499 7.38881 7.38833 3.65039 11.9999 3.65039C16.6115 3.65039 20.3499 7.38881 20.3499 12.0004ZM11.9999 22.1504C17.6056 22.1504 22.1499 17.6061 22.1499 12.0004C22.1499 6.3947 17.6056 1.85039 11.9999 1.85039C6.39421 1.85039 1.8499 6.3947 1.8499 12.0004C1.8499 17.6061 6.39421 22.1504 11.9999 22.1504ZM13.0008 16.4753C13.0008 15.923 12.5531 15.4753 12.0008 15.4753L11.9998 15.4753C11.4475 15.4753 10.9998 15.923 10.9998 16.4753C10.9998 17.0276 11.4475 17.4753 11.9998 17.4753L12.0008 17.4753C12.5531 17.4753 13.0008 17.0276 13.0008 16.4753ZM11.9998 6.62898C12.414 6.62898 12.7498 6.96476 12.7498 7.37898L12.7498 13.0555C12.7498 13.4697 12.414 13.8055 11.9998 13.8055C11.5856 13.8055 11.2498 13.4697 11.2498 13.0555L11.2498 7.37898L11.2498 6.96476 11.5856 6.62898 11.9998 6.62898Z" fill="#F04438" />
+                        </svg>
+                    </div>
+                    <div>
+                        <h4 class="mb-1 text-sm font-semibold text-gray-800 dark:text-white/90">Terjadi Kesalahan</h4>
+                        <p class="text-sm text-gray-500 dark:text-gray-400">@errorMessage</p>
                     </div>
                 </div>
-                <div>
-                    <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
-                        Tanggal Kepulangan <span class="text-error-500">*</span>
-                    </label>
-                    <div class="relative">
-                        <input
-                            type="date"
-                            @bind="tglPulang"
-                            required
-                            onclick="this.showPicker()"
-                            class="dark:bg-dark-900 shadow-theme-xs focus:border-brand-300 focus:ring-brand-500/10 dark:focus:border-brand-800 h-11 w-full appearance-none rounded-lg border border-gray-300 bg-transparent bg-none px-4 py-2.5 text-sm text-gray-800 placeholder:text-gray-400 focus:ring-3 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30"
-                        />
-                    </div>
-                </div>
+                <button @onclick='() => errorMessage = ""' class="text-error-400 hover:text-error-600 dark:text-error-400 dark:hover:text-error-300">
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M15 5L5 15M5 5L15 15" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </button>
             </div>
+        </div>
+    }
 
-            <!-- Perjalanan + Checkbox Luar Negeri -->
-            <div>
-                <p class="mb-3 text-sm font-medium text-gray-800 dark:text-white/90">Perjalanan</p>
-                <label
-                    for="checkPerjalananLNEdit"
-                    class="flex cursor-pointer items-center text-sm font-medium text-gray-700 select-none dark:text-gray-400"
-                >
-                    <div class="relative">
-                        <input
-                            type="checkbox"
-                            id="checkPerjalananLNEdit"
-                            class="sr-only"
-                            @bind="isLuarNegeri"
-                        />
-                        <div
-                            class="hover:border-brand-500 dark:hover:border-brand-500 mr-3 flex h-5 w-5 items-center justify-center rounded-md border-[1.25px] @(isLuarNegeri ? "border-brand-500 bg-brand-500" : "bg-transparent border-gray-300 dark:border-gray-700")"
-                        >
-                            <span class="@(isLuarNegeri ? "" : "opacity-0")">
-                                <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                    <path d="M11.6666 3.5L5.24992 9.91667L2.33325 7" stroke="white" stroke-width="1.94437" stroke-linecap="round" stroke-linejoin="round" />
+    @if (isLoadingData)
+    {
+        <div class="flex items-center justify-center p-12 bg-white dark:bg-white/[0.03] rounded-2xl border border-gray-200 dark:border-gray-800">
+            <span class="h-8 w-8 animate-spin rounded-full border-4 border-brand-500 border-t-transparent"></span>
+            <span class="ml-3 text-sm text-gray-500 dark:text-gray-400">Memuat data pengajuan...</span>
+        </div>
+    }
+    else
+    {
+        <section class="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03]">
+            <div class="space-y-6 p-5 sm:p-6">
+
+                <!-- Nama Pengguna (ADMIN / SDM saja) -->
+                @if (isAdminOrSdm)
+                {
+                    <div>
+                        <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
+                            Nama pengguna <span class="text-error-500">*</span>
+                        </label>
+                        <div class="relative z-20 bg-transparent">
+                            <select
+                                @bind="selectedUserId"
+                                class="dark:bg-dark-900 shadow-theme-xs focus:border-brand-300 focus:ring-brand-500/10 dark:focus:border-brand-800 h-11 w-full appearance-none rounded-lg border border-gray-300 bg-transparent bg-none px-4 py-2.5 pr-11 text-sm text-gray-800 focus:ring-3 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30"
+                            >
+                                <option value="">Pilih Pengguna</option>
+                                @foreach (var user in users)
+                                {
+                                    <option value="@user.Id">@user.Name</option>
+                                }
+                            </select>
+                            <span class="pointer-events-none absolute top-1/2 right-4 z-30 -translate-y-1/2 text-gray-500 dark:text-gray-400">
+                                <svg class="stroke-current" width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M4.79175 7.396L10.0001 12.6043L15.2084 7.396" stroke="" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
                                 </svg>
                             </span>
                         </div>
                     </div>
-                    Perjalanan Luar Negeri
-                </label>
-            </div>
+                }
 
-            <!-- Kota Asal (selalu tampil) -->
-            <div>
-                <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
-                    Kota Asal <span class="text-error-500">*</span>
-                </label>
-                <div class="relative z-20 bg-transparent">
-                    <select
-                        required
-                        class="dark:bg-dark-900 shadow-theme-xs focus:border-brand-300 focus:ring-brand-500/10 dark:focus:border-brand-800 h-11 w-full appearance-none rounded-lg border border-gray-300 bg-transparent bg-none px-4 py-2.5 pr-11 text-sm text-gray-800 placeholder:text-gray-400 focus:ring-3 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30"
+                <!-- Tanggal Berangkat & Pulang (2 kolom) -->
+                <div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
+                    <div>
+                        <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
+                            Tanggal Keberangkatan <span class="text-error-500">*</span>
+                        </label>
+                        <div class="relative">
+                            <input
+                                type="date"
+                                @bind="tglBerangkat"
+                                required
+                                onclick="this.showPicker()"
+                                class="dark:bg-dark-900 shadow-theme-xs focus:border-brand-300 focus:ring-brand-500/10 dark:focus:border-brand-800 h-11 w-full appearance-none rounded-lg border border-gray-300 bg-transparent bg-none px-4 py-2.5 text-sm text-gray-800 placeholder:text-gray-400 focus:ring-3 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30"
+                            />
+                        </div>
+                    </div>
+                    <div>
+                        <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
+                            Tanggal Kepulangan <span class="text-error-500">*</span>
+                        </label>
+                        <div class="relative">
+                            <input
+                                type="date"
+                                @bind="tglPulang"
+                                required
+                                onclick="this.showPicker()"
+                                class="dark:bg-dark-900 shadow-theme-xs focus:border-brand-300 focus:ring-brand-500/10 dark:focus:border-brand-800 h-11 w-full appearance-none rounded-lg border border-gray-300 bg-transparent bg-none px-4 py-2.5 text-sm text-gray-800 placeholder:text-gray-400 focus:ring-3 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30"
+                            />
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Perjalanan + Checkbox Luar Negeri -->
+                <div>
+                    <p class="mb-3 text-sm font-medium text-gray-800 dark:text-white/90">Perjalanan</p>
+                    <label
+                        for="checkPerjalananLNEdit"
+                        class="flex cursor-pointer items-center text-sm font-medium text-gray-700 select-none dark:text-gray-400"
                     >
-                        <option value="" class="text-gray-700 dark:bg-gray-900 dark:text-gray-400">Pilih Kota Asal</option>
-                        <option value="jakarta" selected class="text-gray-700 dark:bg-gray-900 dark:text-gray-400">Jakarta</option>
-                        <option value="bandung" class="text-gray-700 dark:bg-gray-900 dark:text-gray-400">Bandung</option>
-                        <option value="surabaya" class="text-gray-700 dark:bg-gray-900 dark:text-gray-400">Surabaya</option>
-                        <option value="semarang" class="text-gray-700 dark:bg-gray-900 dark:text-gray-400">Semarang</option>
-                        <option value="yogyakarta" class="text-gray-700 dark:bg-gray-900 dark:text-gray-400">Yogyakarta</option>
-                        <option value="medan" class="text-gray-700 dark:bg-gray-900 dark:text-gray-400">Medan</option>
-                        <option value="bali" class="text-gray-700 dark:bg-gray-900 dark:text-gray-400">Bali</option>
-                        <option value="malang" class="text-gray-700 dark:bg-gray-900 dark:text-gray-400">Malang</option>
-                    </select>
-                    <span class="pointer-events-none absolute top-1/2 right-4 z-30 -translate-y-1/2 text-gray-500 dark:text-gray-400">
-                        <svg class="stroke-current" width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M4.79175 7.396L10.0001 12.6043L15.2084 7.396" stroke="" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
-                        </svg>
-                    </span>
+                        <div class="relative">
+                            <input
+                                type="checkbox"
+                                id="checkPerjalananLNEdit"
+                                class="sr-only"
+                                @bind="isLuarNegeri"
+                            />
+                            <div
+                                class="hover:border-brand-500 dark:hover:border-brand-500 mr-3 flex h-5 w-5 items-center justify-center rounded-md border-[1.25px] @(isLuarNegeri ? "border-brand-500 bg-brand-500 text-white" : "bg-transparent border-gray-300 dark:border-gray-700")"
+                            >
+                                <span class="@(isLuarNegeri ? "" : "opacity-0")">
+                                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M11.6666 3.5L5.24992 9.91667L2.33325 7" stroke="white" stroke-width="1.94437" stroke-linecap="round" stroke-linejoin="round" />
+                                    </svg>
+                                </span>
+                            </div>
+                        </div>
+                        Perjalanan Luar Negeri
+                    </label>
                 </div>
-            </div>
 
-            <!-- Kota Tujuan (tampil jika BUKAN luar negeri) -->
-            @if (!isLuarNegeri)
-            {
+                <!-- Kota Asal -->
                 <div>
                     <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
-                        Kota Tujuan <span class="text-error-500">*</span>
+                        Kota Asal <span class="text-error-500">*</span>
                     </label>
                     <div class="relative z-20 bg-transparent">
                         <select
+                            @bind="selectedOriginCityId"
                             required
-                            class="dark:bg-dark-900 shadow-theme-xs focus:border-brand-300 focus:ring-brand-500/10 dark:focus:border-brand-800 h-11 w-full appearance-none rounded-lg border border-gray-300 bg-transparent bg-none px-4 py-2.5 pr-11 text-sm text-gray-800 placeholder:text-gray-400 focus:ring-3 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30"
+                            class="dark:bg-dark-900 shadow-theme-xs focus:border-brand-300 focus:ring-brand-500/10 dark:focus:border-brand-800 h-11 w-full appearance-none rounded-lg border border-gray-300 bg-transparent bg-none px-4 py-2.5 pr-11 text-sm text-gray-800 focus:ring-3 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30"
                         >
-                            <option value="" class="text-gray-700 dark:bg-gray-900 dark:text-gray-400">Pilih Kota Tujuan</option>
-                            <option value="jakarta" class="text-gray-700 dark:bg-gray-900 dark:text-gray-400">Jakarta</option>
-                            <option value="bandung" class="text-gray-700 dark:bg-gray-900 dark:text-gray-400">Bandung</option>
-                            <option value="surabaya" selected class="text-gray-700 dark:bg-gray-900 dark:text-gray-400">Surabaya</option>
-                            <option value="semarang" class="text-gray-700 dark:bg-gray-900 dark:text-gray-400">Semarang</option>
-                            <option value="yogyakarta" class="text-gray-700 dark:bg-gray-900 dark:text-gray-400">Yogyakarta</option>
-                            <option value="medan" class="text-gray-700 dark:bg-gray-900 dark:text-gray-400">Medan</option>
-                            <option value="bali" class="text-gray-700 dark:bg-gray-900 dark:text-gray-400">Bali</option>
-                            <option value="malang" class="text-gray-700 dark:bg-gray-900 dark:text-gray-400">Malang</option>
+                            <option value="0">Pilih Kota Asal</option>
+                            @foreach (var city in cities)
+                            {
+                                <option value="@city.Id">@city.Name</option>
+                            }
                         </select>
                         <span class="pointer-events-none absolute top-1/2 right-4 z-30 -translate-y-1/2 text-gray-500 dark:text-gray-400">
                             <svg class="stroke-current" width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -143,75 +166,120 @@
                         </span>
                     </div>
                 </div>
-            }
 
-            <!-- Negara Tujuan (tampil jika luar negeri) -->
-            @if (isLuarNegeri)
-            {
+                <!-- Kota Tujuan atau Negara Tujuan -->
+                @if (!isLuarNegeri)
+                {
+                    <div>
+                        <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
+                            Kota Tujuan <span class="text-error-500">*</span>
+                        </label>
+                        <div class="relative z-20 bg-transparent">
+                            <select
+                                @bind="selectedDestinationCityId"
+                                required
+                                class="dark:bg-dark-900 shadow-theme-xs focus:border-brand-300 focus:ring-brand-500/10 dark:focus:border-brand-800 h-11 w-full appearance-none rounded-lg border border-gray-300 bg-transparent bg-none px-4 py-2.5 pr-11 text-sm text-gray-800 focus:ring-3 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30"
+                            >
+                                <option value="0">Pilih Kota Tujuan</option>
+                                @foreach (var city in cities)
+                                {
+                                    <option value="@city.Id">@city.Name</option>
+                                }
+                            </select>
+                            <span class="pointer-events-none absolute top-1/2 right-4 z-30 -translate-y-1/2 text-gray-500 dark:text-gray-400">
+                                <svg class="stroke-current" width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M4.79175 7.396L10.0001 12.6043L15.2084 7.396" stroke="" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+                                </svg>
+                            </span>
+                        </div>
+                    </div>
+                }
+                else
+                {
+                    <div>
+                        <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
+                            Negara Tujuan <span class="text-error-500">*</span>
+                        </label>
+                        <div class="relative z-20 bg-transparent">
+                            <select
+                                @bind="selectedDestinationCountryId"
+                                required
+                                class="dark:bg-dark-900 shadow-theme-xs focus:border-brand-300 focus:ring-brand-500/10 dark:focus:border-brand-800 h-11 w-full appearance-none rounded-lg border border-gray-300 bg-transparent bg-none px-4 py-2.5 pr-11 text-sm text-gray-800 focus:ring-3 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30"
+                            >
+                                <option value="0">Pilih Negara Tujuan</option>
+                                @foreach (var country in countries)
+                                {
+                                    <option value="@country.Id">@country.Name</option>
+                                }
+                            </select>
+                            <span class="pointer-events-none absolute top-1/2 right-4 z-30 -translate-y-1/2 text-gray-500 dark:text-gray-400">
+                                <svg class="stroke-current" width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M4.79175 7.396L10.0001 12.6043L15.2084 7.396" stroke="" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+                                </svg>
+                            </span>
+                        </div>
+                    </div>
+                }
+
                 <div>
                     <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
-                        Negara Tujuan <span class="text-error-500">*</span>
+                        Tujuan <span class="text-error-500">*</span>
                     </label>
-                    <div class="relative z-20 bg-transparent">
-                        <select
-                            required
-                            class="dark:bg-dark-900 shadow-theme-xs focus:border-brand-300 focus:ring-brand-500/10 dark:focus:border-brand-800 h-11 w-full appearance-none rounded-lg border border-gray-300 bg-transparent bg-none px-4 py-2.5 pr-11 text-sm text-gray-800 placeholder:text-gray-400 focus:ring-3 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30"
-                        >
-                            <option value="" class="text-gray-700 dark:bg-gray-900 dark:text-gray-400">Pilih Negara Tujuan</option>
-                            <option value="singapore" class="text-gray-700 dark:bg-gray-900 dark:text-gray-400">Singapura</option>
-                            <option value="malaysia" class="text-gray-700 dark:bg-gray-900 dark:text-gray-400">Malaysia</option>
-                            <option value="thailand" class="text-gray-700 dark:bg-gray-900 dark:text-gray-400">Thailand</option>
-                            <option value="japan" class="text-gray-700 dark:bg-gray-900 dark:text-gray-400">Jepang</option>
-                            <option value="south-korea" class="text-gray-700 dark:bg-gray-900 dark:text-gray-400">Korea Selatan</option>
-                            <option value="australia" class="text-gray-700 dark:bg-gray-900 dark:text-gray-400">Australia</option>
-                            <option value="usa" class="text-gray-700 dark:bg-gray-900 dark:text-gray-400">Amerika Serikat</option>
-                            <option value="germany" class="text-gray-700 dark:bg-gray-900 dark:text-gray-400">Jerman</option>
-                        </select>
-                        <span class="pointer-events-none absolute top-1/2 right-4 z-30 -translate-y-1/2 text-gray-500 dark:text-gray-400">
-                            <svg class="stroke-current" width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                <path d="M4.79175 7.396L10.0001 12.6043L15.2084 7.396" stroke="" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
-                            </svg>
-                        </span>
-                    </div>
+                    <textarea
+                        @bind="purpose"
+                        rows="5"
+                        required
+                        class="dark:bg-dark-900 shadow-theme-xs focus:border-brand-300 focus:ring-brand-500/10 dark:focus:border-brand-800 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 placeholder:text-gray-400 focus:ring-3 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30"
+                    ></textarea>
                 </div>
-            }
 
-            <!-- Tujuan (Textarea) -->
-            <div>
-                <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
-                    Tujuan <span class="text-error-500">*</span>
-                </label>
-                <textarea
-                    rows="5"
-                    required
-                    class="dark:bg-dark-900 shadow-theme-xs focus:border-brand-300 focus:ring-brand-500/10 dark:focus:border-brand-800 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 placeholder:text-gray-400 focus:ring-3 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30"
-                >Menghadiri rapat koordinasi proyek pembangunan infrastruktur di kantor cabang Surabaya.</textarea>
             </div>
+        </section>
 
-        </div>
-    </div>
+        <section class="mt-6 rounded-2xl border border-gray-200 bg-white p-5 sm:p-6 dark:border-gray-800 dark:bg-white/[0.03]">
+            <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Total perjalanan dinas</p>
+            <p class="mt-1 text-2xl font-semibold text-gray-800 dark:text-white/90">
+                @TotalHari Hari
+            </p>
+        </section>
 
-    <!-- Section 3: Total Hari -->
-    <div class="mt-6 rounded-2xl border border-gray-200 bg-white p-5 sm:p-6 dark:border-gray-800 dark:bg-white/[0.03]">
-        <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Total perjalanan dinas</p>
-        <p class="mt-1 text-2xl font-semibold text-gray-800 dark:text-white/90">
-            @TotalHari Hari
-        </p>
-    </div>
-
-    <!-- Section 4: Tombol Submit -->
-    <div class="mt-6 flex justify-end">
-        <button class="inline-flex items-center justify-center gap-2 rounded-lg bg-brand-500 px-5 py-3 text-sm font-medium text-white shadow-theme-xs hover:bg-brand-600">
-            Ubah
-        </button>
-    </div>
-
+        <section class="mt-6 flex justify-end">
+            <button 
+                @onclick="HandleUpdate"
+                disabled="@isSubmitting"
+                class="inline-flex items-center justify-center gap-2 rounded-lg bg-brand-500 px-5 py-3 text-sm font-medium text-white shadow-theme-xs hover:bg-brand-600 disabled:opacity-50"
+            >
+                @if (isSubmitting)
+                {
+                    <span class="h-4 w-4 animate-spin rounded-full border-2 border-solid border-white border-t-transparent"></span>
+                }
+                Ubah
+            </button>
+        </section>
+    }
 </div>
 
 @code {
+    [Parameter] public string Id { get; set; } = string.Empty;
+
     private bool isLuarNegeri = false;
-    private DateTime? tglBerangkat = new DateTime(2025, 7, 15);
-    private DateTime? tglPulang = new DateTime(2025, 7, 18);
+    private DateTime? tglBerangkat;
+    private DateTime? tglPulang;
+
+    private int selectedOriginCityId = 0;
+    private int selectedDestinationCityId = 0;
+    private int selectedDestinationCountryId = 0;
+    private string purpose = "";
+    private int? selectedUserId;
+
+    private List<CityItem> cities = new();
+    private List<CountryItem> countries = new();
+    private List<UserItem> users = new();
+
+    private bool isAdminOrSdm = false;
+    private bool isLoadingData = true;
+    private bool isSubmitting = false;
+    private string errorMessage = "";
 
     private int TotalHari
     {
@@ -221,5 +289,172 @@
             var diff = (tglPulang.Value - tglBerangkat.Value).Days;
             return diff > 0 ? diff : 0;
         }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var userInfo = await AuthService.GetUserInfoAsync();
+            if (userInfo != null)
+            {
+                isAdminOrSdm = userInfo.Roles.Contains("ADMIN") || userInfo.Roles.Contains("SDM");
+            }
+
+            var citiesResult = await PerdinService.GetCitiesAsync();
+            if (citiesResult.Success && citiesResult.Data != null)
+            {
+                cities = citiesResult.Data;
+            }
+
+            var countriesResult = await PerdinService.GetCountriesAsync();
+            if (countriesResult.Success && countriesResult.Data != null)
+            {
+                countries = countriesResult.Data.Where(c => c.IsForeign).ToList();
+            }
+
+            if (isAdminOrSdm)
+            {
+                var usersResult = await PerdinService.GetUsersAsync();
+                if (usersResult.Success && usersResult.Data != null)
+                {
+                    users = usersResult.Data;
+                }
+            }
+
+            if (int.TryParse(Id, out int idVal))
+            {
+                var detailResult = await PerdinService.GetDetailAsync(idVal);
+                if (detailResult.Success && detailResult.Data != null)
+                {
+                    var data = detailResult.Data;
+                    tglBerangkat = data.DepartureDate.ToDateTime(TimeOnly.MinValue);
+                    tglPulang = data.ReturnDate.ToDateTime(TimeOnly.MinValue);
+                    selectedOriginCityId = data.OriginCityId;
+                    
+                    isLuarNegeri = data.DestinationCityId == null;
+                    if (isLuarNegeri)
+                    {
+                        selectedDestinationCountryId = data.DestinationCountryId;
+                    }
+                    else
+                    {
+                        selectedDestinationCityId = data.DestinationCityId.Value;
+                    }
+
+                    purpose = data.Purpose;
+                    selectedUserId = data.User.Id;
+                }
+                else
+                {
+                    errorMessage = detailResult.Message;
+                }
+            }
+            else
+            {
+                errorMessage = "ID pengajuan tidak valid.";
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = "Terjadi kesalahan saat memuat data dari server.";
+        }
+        finally
+        {
+            isLoadingData = false;
+        }
+    }
+
+    private async Task HandleUpdate()
+    {
+        // Validasi input
+        if (tglBerangkat == null || tglPulang == null)
+        {
+            errorMessage = "Tanggal keberangkatan dan kepulangan wajib diisi.";
+            _ = AutoDismissError();
+            return;
+        }
+
+        if (selectedOriginCityId == 0)
+        {
+            errorMessage = "Kota asal wajib dipilih.";
+            _ = AutoDismissError();
+            return;
+        }
+
+        if (!isLuarNegeri && selectedDestinationCityId == 0)
+        {
+            errorMessage = "Kota tujuan wajib dipilih.";
+            _ = AutoDismissError();
+            return;
+        }
+
+        if (isLuarNegeri && selectedDestinationCountryId == 0)
+        {
+            errorMessage = "Negara tujuan wajib dipilih.";
+            _ = AutoDismissError();
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(purpose))
+        {
+            errorMessage = "Tujuan perjalanan wajib diisi.";
+            _ = AutoDismissError();
+            return;
+        }
+
+        if (isAdminOrSdm && selectedUserId == null)
+        {
+            errorMessage = "Pengguna (User) wajib dipilih.";
+            _ = AutoDismissError();
+            return;
+        }
+
+        isSubmitting = true;
+        errorMessage = "";
+        StateHasChanged();
+
+        try
+        {
+            var req = new BusinessTripRequestUpdateRequest
+            {
+                DepartureDate = DateOnly.FromDateTime(tglBerangkat.Value),
+                ReturnDate = DateOnly.FromDateTime(tglPulang.Value),
+                OriginCityId = selectedOriginCityId,
+                DestinationCityId = isLuarNegeri ? null : selectedDestinationCityId,
+                DestinationCountryId = isLuarNegeri ? selectedDestinationCountryId : 1, // Default Indonesia
+                Purpose = purpose,
+                UserId = isAdminOrSdm ? selectedUserId : null
+            };
+
+            int idVal = int.Parse(Id);
+            var result = await PerdinService.UpdateAsync(idVal, req);
+            if (result.Success)
+            {
+                Navigation.NavigateTo("/perdin?success=" + Uri.EscapeDataString(result.Message));
+            }
+            else
+            {
+                errorMessage = result.Message;
+                _ = AutoDismissError();
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = "Gagal terhubung ke server untuk mengubah pengajuan.";
+            _ = AutoDismissError();
+        }
+        finally
+        {
+            isSubmitting = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task AutoDismissError()
+    {
+        await Task.Delay(5000);
+        errorMessage = "";
+        StateHasChanged();
     }
 }

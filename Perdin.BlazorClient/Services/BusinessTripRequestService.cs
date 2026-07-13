@@ -1,0 +1,199 @@
+using System;
+using System.Collections.Generic;
+using System.Net.Http;
+using System.Net.Http.Headers;
+using System.Net.Http.Json;
+using System.Text.Json;
+using System.Threading.Tasks;
+using Perdin.BlazorClient.Models;
+
+namespace Perdin.BlazorClient.Services
+{
+    public class BusinessTripRequestService
+    {
+        private readonly HttpClient _httpClient;
+        private readonly AuthService _authService;
+        private readonly JsonSerializerOptions _jsonOptions;
+
+        public BusinessTripRequestService(HttpClient httpClient, AuthService authService)
+        {
+            _httpClient = httpClient;
+            _authService = authService;
+            _jsonOptions = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+        }
+
+        private async Task SetAuthHeaderAsync()
+        {
+            var token = await _authService.GetTokenAsync();
+            if (!string.IsNullOrEmpty(token))
+            {
+                _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+            }
+            else
+            {
+                _httpClient.DefaultRequestHeaders.Authorization = null;
+            }
+        }
+
+        public async Task<ApiResponse<List<BusinessTripRequestListItem>>> GetListAsync(string status, string sortBy = "newest")
+        {
+            await SetAuthHeaderAsync();
+            var response = await _httpClient.GetAsync($"business-trip-requests?status={status}&sortBy={sortBy}");
+            var content = await response.Content.ReadAsStringAsync();
+            
+            if (response.IsSuccessStatusCode)
+            {
+                var result = JsonSerializer.Deserialize<ApiResponse<List<BusinessTripRequestListItem>>>(content, _jsonOptions);
+                return result ?? new ApiResponse<List<BusinessTripRequestListItem>> { Success = false, Message = "Gagal memproses data dari server." };
+            }
+            else
+            {
+                try
+                {
+                    var errorResult = JsonSerializer.Deserialize<ApiResponse<object>>(content, _jsonOptions);
+                    return new ApiResponse<List<BusinessTripRequestListItem>>
+                    {
+                        Success = false,
+                        Message = errorResult?.Message ?? $"Error {response.StatusCode}"
+                    };
+                }
+                catch
+                {
+                    return new ApiResponse<List<BusinessTripRequestListItem>> { Success = false, Message = "Terjadi kesalahan di server." };
+                }
+            }
+        }
+
+        public async Task<ApiResponse<BusinessTripRequestDetail>> GetDetailAsync(int id)
+        {
+            await SetAuthHeaderAsync();
+            var response = await _httpClient.GetAsync($"business-trip-requests/{id}");
+            var content = await response.Content.ReadAsStringAsync();
+
+            if (response.IsSuccessStatusCode)
+            {
+                var result = JsonSerializer.Deserialize<ApiResponse<BusinessTripRequestDetail>>(content, _jsonOptions);
+                return result ?? new ApiResponse<BusinessTripRequestDetail> { Success = false, Message = "Gagal memproses data dari server." };
+            }
+            else
+            {
+                try
+                {
+                    var errorResult = JsonSerializer.Deserialize<ApiResponse<object>>(content, _jsonOptions);
+                    return new ApiResponse<BusinessTripRequestDetail>
+                    {
+                        Success = false,
+                        Message = errorResult?.Message ?? $"Error {response.StatusCode}"
+                    };
+                }
+                catch
+                {
+                    return new ApiResponse<BusinessTripRequestDetail> { Success = false, Message = "Terjadi kesalahan di server." };
+                }
+            }
+        }
+
+        public async Task<ApiResponse<object>> CreateAsync(BusinessTripRequestCreateRequest request)
+        {
+            await SetAuthHeaderAsync();
+            var response = await _httpClient.PostAsJsonAsync("business-trip-requests", request);
+            var content = await response.Content.ReadAsStringAsync();
+
+            var result = JsonSerializer.Deserialize<ApiResponse<object>>(content, _jsonOptions);
+            return result ?? new ApiResponse<object> { Success = false, Message = "Gagal memproses data dari server." };
+        }
+
+        public async Task<ApiResponse<object>> UpdateAsync(int id, BusinessTripRequestUpdateRequest request)
+        {
+            await SetAuthHeaderAsync();
+            
+            var requestMessage = new HttpRequestMessage(HttpMethod.Patch, $"business-trip-requests/{id}")
+            {
+                Content = JsonContent.Create(request)
+            };
+            
+            var response = await _httpClient.SendAsync(requestMessage);
+            var content = await response.Content.ReadAsStringAsync();
+
+            var result = JsonSerializer.Deserialize<ApiResponse<object>>(content, _jsonOptions);
+            return result ?? new ApiResponse<object> { Success = false, Message = "Gagal memproses data dari server." };
+        }
+
+        public async Task<ApiResponse<object>> DeleteAsync(int id)
+        {
+            await SetAuthHeaderAsync();
+            var response = await _httpClient.DeleteAsync($"business-trip-requests/{id}");
+            var content = await response.Content.ReadAsStringAsync();
+
+            var result = JsonSerializer.Deserialize<ApiResponse<object>>(content, _jsonOptions);
+            return result ?? new ApiResponse<object> { Success = false, Message = "Gagal memproses data dari server." };
+        }
+
+        public async Task<ApiResponse<object>> ApprovalAsync(int id, BusinessTripRequestApprovalRequest request)
+        {
+            await SetAuthHeaderAsync();
+
+            var requestMessage = new HttpRequestMessage(HttpMethod.Patch, $"business-trip-requests/{id}/approval")
+            {
+                Content = JsonContent.Create(request)
+            };
+
+            var response = await _httpClient.SendAsync(requestMessage);
+            var content = await response.Content.ReadAsStringAsync();
+
+            var result = JsonSerializer.Deserialize<ApiResponse<object>>(content, _jsonOptions);
+            return result ?? new ApiResponse<object> { Success = false, Message = "Gagal memproses data dari server." };
+        }
+
+        public async Task<ApiResponse<List<CityItem>>> GetCitiesAsync()
+        {
+            await SetAuthHeaderAsync();
+            var response = await _httpClient.GetAsync("cities");
+            var content = await response.Content.ReadAsStringAsync();
+
+            if (response.IsSuccessStatusCode)
+            {
+                var result = JsonSerializer.Deserialize<ApiResponse<List<CityItem>>>(content, _jsonOptions);
+                return result ?? new ApiResponse<List<CityItem>> { Success = false, Message = "Gagal memproses data dari server." };
+            }
+            else
+            {
+                return new ApiResponse<List<CityItem>> { Success = false, Message = "Gagal mengambil data kota." };
+            }
+        }
+
+        public async Task<ApiResponse<List<CountryItem>>> GetCountriesAsync()
+        {
+            await SetAuthHeaderAsync();
+            var response = await _httpClient.GetAsync("countries");
+            var content = await response.Content.ReadAsStringAsync();
+
+            if (response.IsSuccessStatusCode)
+            {
+                var result = JsonSerializer.Deserialize<ApiResponse<List<CountryItem>>>(content, _jsonOptions);
+                return result ?? new ApiResponse<List<CountryItem>> { Success = false, Message = "Gagal memproses data dari server." };
+            }
+            else
+            {
+                return new ApiResponse<List<CountryItem>> { Success = false, Message = "Gagal mengambil data negara." };
+            }
+        }
+
+        public async Task<ApiResponse<List<UserItem>>> GetUsersAsync()
+        {
+            await SetAuthHeaderAsync();
+            var response = await _httpClient.GetAsync("users");
+            var content = await response.Content.ReadAsStringAsync();
+
+            if (response.IsSuccessStatusCode)
+            {
+                var result = JsonSerializer.Deserialize<ApiResponse<List<UserItem>>>(content, _jsonOptions);
+                return result ?? new ApiResponse<List<UserItem>> { Success = false, Message = "Gagal memproses data dari server." };
+            }
+            else
+            {
+                return new ApiResponse<List<UserItem>> { Success = false, Message = "Gagal mengambil data user." };
+            }
+        }
+    }
+}
