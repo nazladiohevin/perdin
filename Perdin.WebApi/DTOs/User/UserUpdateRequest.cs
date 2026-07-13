@@ -19,10 +19,9 @@ namespace Perdin.WebApi.DTOs.User
         [MaxLength(30, ErrorMessage = "Email maksimal 30 karakter.")]
         public string Email { get; set; } = null!;
 
-        [Required(ErrorMessage = "Password wajib diisi.")]
         [MinLength(6, ErrorMessage = "Password minimal 6 karakter.")]
         [MaxLength(30, ErrorMessage = "Password maksimal 30 karakter.")]
-        public string Password { get; set; } = null!;
+        public string? Password { get; set; }
 
         [Required(ErrorMessage = "RoleIds wajib diisi.")]
         [MinLength(1, ErrorMessage = "RoleIds harus memiliki minimal 1 role.")]
