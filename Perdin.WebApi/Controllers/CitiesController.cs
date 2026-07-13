@@ -23,22 +23,57 @@ namespace Perdin.WebApi.Controllers
 
         [HttpGet]
         [AllowAnonymous] // Allow any user to fetch cities for trip creation
-        public async Task<IActionResult> GetAllCities()
+        public async Task<IActionResult> GetAllCities([FromQuery] string? include = null)
         {
-            var cities = await _context.Cities
-                .Select(c => new CityResponse
-                {
-                    Id = c.Id,
-                    ProvinceId = c.ProvinceId,
-                    Name = c.Name,
-                    Latitude = c.Latitude,
-                    Longitude = c.Longitude,
-                    CreatedAt = c.CreatedAt,
-                    UpdatedAt = c.UpdatedAt
-                })
-                .ToListAsync();
+            var includeProvince = !string.IsNullOrEmpty(include) && 
+                (include.Equals("province", StringComparison.OrdinalIgnoreCase) || 
+                 include.Equals("provinces", StringComparison.OrdinalIgnoreCase));
 
-            return Ok(ApiResponse<IEnumerable<CityResponse>>.SuccessResponse(cities, "Berhasil mengambil data kota."));
+            var query = _context.Cities.OrderByDescending(c => c.CreatedAt).AsQueryable();
+
+            if (includeProvince)
+            {
+                var cities = await query
+                    .Select(c => new CityResponse
+                    {
+                        Id = c.Id,
+                        ProvinceId = c.ProvinceId,
+                        Name = c.Name,
+                        Latitude = c.Latitude,
+                        Longitude = c.Longitude,
+                        CreatedAt = c.CreatedAt,
+                        UpdatedAt = c.UpdatedAt,
+                        Province = new ProvinceResponse
+                        {
+                            Id = c.Province.Id,
+                            CountryId = c.Province.CountryId,
+                            Name = c.Province.Name,
+                            CreatedAt = c.Province.CreatedAt,
+                            UpdatedAt = c.Province.UpdatedAt
+                        }
+                    })
+                    .ToListAsync();
+
+                return Ok(ApiResponse<IEnumerable<CityResponse>>.SuccessResponse(cities, "Berhasil mengambil data kota."));
+            }
+            else
+            {
+                var cities = await query
+                    .Select(c => new CityResponse
+                    {
+                        Id = c.Id,
+                        ProvinceId = c.ProvinceId,
+                        Name = c.Name,
+                        Latitude = c.Latitude,
+                        Longitude = c.Longitude,
+                        CreatedAt = c.CreatedAt,
+                        UpdatedAt = c.UpdatedAt,
+                        Province = null
+                    })
+                    .ToListAsync();
+
+                return Ok(ApiResponse<IEnumerable<CityResponse>>.SuccessResponse(cities, "Berhasil mengambil data kota."));
+            }
         }
 
         [HttpGet("{id}")]

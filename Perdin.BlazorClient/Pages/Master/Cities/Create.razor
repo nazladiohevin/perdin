@@ -1,4 +1,6 @@
 @page "/cities/create"
+@inject CityService CityService
+@inject NavigationManager Navigation
 <PageTitle>Buat Kota Baru</PageTitle>
 
 <!-- Section 1: Header -->
@@ -16,46 +18,124 @@
     </a>
 </div>
 
+@if (!string.IsNullOrEmpty(errorMessage))
+{
+    <div class="mb-6">
+        <Alert Type="error" Message="@errorMessage" OnClose="() => errorMessage = string.Empty" />
+    </div>
+}
+
 <!-- Section 2: Form Input -->
 <div class="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03]">
-    <div class="space-y-6 p-5 sm:p-6">
-        <div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
-            <div>
-                <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">Nama</label>
-                <input type="text" required
-                       class="h-11 w-full rounded-lg border appearance-none px-4 py-2.5 text-sm shadow-theme-xs placeholder:text-gray-400 focus:outline-none focus:ring-0 border-gray-300 bg-white text-gray-800 focus:border-brand-500 focus:shadow-focus-ring dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:focus:border-brand-500" />
-            </div>
-            <div>
-                <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">Provinsi</label>
-                <div class="relative">
-                    <select required class="h-11 w-full rounded-lg border appearance-none px-4 py-2.5 text-sm shadow-theme-xs placeholder:text-gray-400 focus:outline-none focus:ring-0 border-gray-300 bg-white text-gray-800 focus:border-brand-500 focus:shadow-focus-ring dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:focus:border-brand-500">
-                        <option value="">Pilih Provinsi</option>
-                        <option value="Jawa Timur">Jawa Timur</option>
-                        <option value="Jawa Barat">Jawa Barat</option>
-                        <option value="Jawa Tengah">Jawa Tengah</option>
-                    </select>
-                    <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4">
-                        <svg class="h-4 w-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+    <form @onsubmit="HandleSubmit" method="POST">
+        <div class="space-y-6 p-5 sm:p-6">
+            <div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
+                <div>
+                    <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
+                        Nama <span class="text-error-500">*</span>
+                    </label>
+                    <input type="text" required @bind="createRequest.Name"
+                           class="h-11 w-full rounded-lg border appearance-none px-4 py-2.5 text-sm shadow-theme-xs placeholder:text-gray-400 focus:outline-none focus:ring-0 border-gray-300 bg-white text-gray-800 focus:border-brand-500 focus:shadow-focus-ring dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:focus:border-brand-500" />
+                </div>
+                <div>
+                    <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
+                        Provinsi <span class="text-error-500">*</span>
+                    </label>
+                    <div class="relative">
+                        <select required @bind="createRequest.ProvinceId" class="h-11 w-full rounded-lg border appearance-none px-4 py-2.5 text-sm shadow-theme-xs focus:outline-none focus:ring-0 border-gray-300 bg-white text-gray-800 focus:border-brand-500 focus:shadow-focus-ring dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:focus:border-brand-500">
+                            <option value="">Pilih Provinsi</option>
+                            @foreach (var province in provinces)
+                            {
+                                <option value="@province.Id">@province.Name</option>
+                            }
+                        </select>
+                        <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4">
+                            <svg class="h-4 w-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                        </div>
                     </div>
                 </div>
+                <div>
+                    <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
+                        Latitude <span class="text-error-500">*</span>
+                    </label>
+                    <input type="number" step="any" required @bind="createRequest.Latitude"
+                           class="h-11 w-full rounded-lg border appearance-none px-4 py-2.5 text-sm shadow-theme-xs placeholder:text-gray-400 focus:outline-none focus:ring-0 border-gray-300 bg-white text-gray-800 focus:border-brand-500 focus:shadow-focus-ring dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:focus:border-brand-500" />
+                </div>
+                <div>
+                    <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
+                        Longitude <span class="text-error-500">*</span>
+                    </label>
+                    <input type="number" step="any" required @bind="createRequest.Longitude"
+                           class="h-11 w-full rounded-lg border appearance-none px-4 py-2.5 text-sm shadow-theme-xs placeholder:text-gray-400 focus:outline-none focus:ring-0 border-gray-300 bg-white text-gray-800 focus:border-brand-500 focus:shadow-focus-ring dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:focus:border-brand-500" />
+                </div>
             </div>
-            <div>
-                <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">Latitude</label>
-                <input type="text" required
-                       class="h-11 w-full rounded-lg border appearance-none px-4 py-2.5 text-sm shadow-theme-xs placeholder:text-gray-400 focus:outline-none focus:ring-0 border-gray-300 bg-white text-gray-800 focus:border-brand-500 focus:shadow-focus-ring dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:focus:border-brand-500" />
-            </div>
-            <div>
-                <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">Longitude</label>
-                <input type="text" required
-                       class="h-11 w-full rounded-lg border appearance-none px-4 py-2.5 text-sm shadow-theme-xs placeholder:text-gray-400 focus:outline-none focus:ring-0 border-gray-300 bg-white text-gray-800 focus:border-brand-500 focus:shadow-focus-ring dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:focus:border-brand-500" />
+            
+            <!-- Section 3: Button -->
+            <div class="flex justify-end pt-4">
+                <button type="submit" disabled="@isSubmitting" class="inline-flex items-center gap-2 rounded-lg bg-brand-500 px-6 py-3 text-sm font-medium text-white shadow-theme-xs hover:bg-brand-600 disabled:opacity-50">
+                    @if (isSubmitting)
+                    {
+                        <span class="h-4 w-4 animate-spin rounded-full border-2 border-solid border-white border-t-transparent"></span>
+                    }
+                    Buat
+                </button>
             </div>
         </div>
-        
-        <!-- Section 3: Button -->
-        <div class="flex justify-end pt-4">
-            <button class="inline-flex items-center gap-2 rounded-lg bg-brand-500 px-6 py-3 text-sm font-medium text-white shadow-theme-xs hover:bg-brand-600">
-                Buat
-            </button>
-        </div>
-    </div>
+    </form>
 </div>
+
+@code {
+    private CityCreateRequest createRequest = new();
+    private List<ProvinceListItem> provinces = new();
+    private bool isSubmitting = false;
+    private string errorMessage = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var result = await CityService.GetProvincesAsync();
+            if (result.Success && result.Data != null)
+            {
+                provinces = result.Data;
+            }
+            else
+            {
+                errorMessage = "Gagal memuat daftar provinsi dari server.";
+            }
+        }
+        catch (Exception)
+        {
+            errorMessage = "Gagal menghubungi server untuk memuat daftar provinsi.";
+        }
+    }
+
+    private async Task HandleSubmit()
+    {
+        isSubmitting = true;
+        errorMessage = string.Empty;
+        StateHasChanged();
+
+        try
+        {
+            var result = await CityService.CreateAsync(createRequest);
+            if (result.Success)
+            {
+                Navigation.NavigateTo($"/cities?success={Uri.EscapeDataString(result.Message)}", forceLoad: false);
+            }
+            else
+            {
+                errorMessage = result.Message;
+            }
+        }
+        catch (Exception)
+        {
+            errorMessage = "Terjadi kesalahan saat menyimpan data kota.";
+        }
+        finally
+        {
+            isSubmitting = false;
+            StateHasChanged();
+        }
+    }
+}

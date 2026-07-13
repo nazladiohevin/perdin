@@ -16,6 +16,7 @@ builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(backendA
 builder.Services.AddScoped<AuthService>();
 builder.Services.AddScoped<BusinessTripRequestService>();
 builder.Services.AddScoped<UserService>();
+builder.Services.AddScoped<CityService>();
 builder.Services.AddScoped<AuthenticationStateProvider, JwtAuthenticationStateProvider>();
 builder.Services.AddAuthorizationCore();
 builder.Services.AddBlazoredToast();
