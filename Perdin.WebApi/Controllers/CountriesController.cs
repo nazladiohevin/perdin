@@ -24,6 +24,7 @@ namespace Perdin.WebApi.Controllers
         public async Task<IActionResult> GetAllCountries()
         {
             var countries = await _context.Countries
+                .OrderByDescending(c => c.CreatedAt)
                 .Select(c => new CountryResponse
                 {
                     Id = c.Id,
