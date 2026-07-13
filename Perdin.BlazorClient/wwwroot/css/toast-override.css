@@ -1,0 +1,44 @@
+/* Custom Styles for ManuHub.Blazor.Toast to match TailAdmin */
+
+.blazored-toast-container {
+    z-index: 999999 !important;
+}
+
+.blazored-toast {
+    border-radius: 0.75rem !important;
+    padding: 1rem !important;
+    box-shadow: 0px 4px 8px -2px rgba(16, 24, 40, 0.1), 0px 2px 4px -2px rgba(16, 24, 40, 0.06) !important;
+    border-width: 1px !important;
+    border-style: solid !important;
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+}
+
+.blazored-toast-header {
+    display: none !important;
+}
+
+.blazored-toast.error-toast {
+    background-color: var(--color-error-50) !important;
+    border-color: var(--color-error-500) !important;
+    color: var(--color-error-500) !important;
+}
+
+.dark .blazored-toast.error-toast {
+    background-color: rgba(240, 68, 56, 0.15) !important;
+    border-color: rgba(240, 68, 56, 0.3) !important;
+    color: #F04438 !important;
+}
+
+.blazored-toast.success-toast {
+    background-color: var(--color-success-50) !important;
+    border-color: var(--color-success-500) !important;
+    color: var(--color-success-500) !important;
+}
+
+.dark .blazored-toast.success-toast {
+    background-color: rgba(18, 183, 106, 0.15) !important;
+    border-color: rgba(18, 183, 106, 0.3) !important;
+    color: #12B76A !important;
+}
