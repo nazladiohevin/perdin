@@ -15,6 +15,16 @@ builder.Services.AddScoped<IJwtService, JwtService>();
 builder.Services.AddSingleton<ILoginAttemptService, LoginAttemptService>();
 builder.Services.AddSingleton<ITokenBlacklistService, TokenBlacklistService>();
 
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowBlazorClient", policy =>
+    {
+        policy.WithOrigins("http://localhost:5198", "https://localhost:7246")
+              .AllowAnyMethod()
+              .AllowAnyHeader();
+    });
+});
+
 builder.Services.AddControllers()
     .ConfigureApiBehaviorOptions(options =>
     {
@@ -106,6 +116,8 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+app.UseCors("AllowBlazorClient");
 
 app.UseAuthentication();
 app.UseAuthorization();
