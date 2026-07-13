@@ -1,4 +1,6 @@
 @page "/countries/{id}/edit"
+@inject CountryService CountryService
+@inject NavigationManager Navigation
 <PageTitle>Edit Negara</PageTitle>
 
 <!-- Section 1: Header -->
@@ -16,39 +18,158 @@
     </a>
 </div>
 
+@if (!string.IsNullOrEmpty(errorMessage))
+{
+    <div class="mb-6">
+        <Alert Type="error" Message="@errorMessage" OnClose="() => errorMessage = string.Empty" />
+    </div>
+}
+
 <!-- Section 2: Form Input -->
 <div class="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03]">
-    <div class="space-y-6 p-5 sm:p-6">
-        <div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
-            <div>
-                <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">Nama</label>
-                <input type="text" required value="Singapura"
-                       class="h-11 w-full rounded-lg border appearance-none px-4 py-2.5 text-sm shadow-theme-xs placeholder:text-gray-400 focus:outline-none focus:ring-0 border-gray-300 bg-white text-gray-800 focus:border-brand-500 focus:shadow-focus-ring dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:focus:border-brand-500" />
-            </div>
-            <div>
-                <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">Tipe Negara</label>
-                <div class="flex h-11 items-center gap-6">
-                    <label class="flex items-center gap-2 cursor-pointer">
-                        <input type="radio" name="tipeNegara" value="Dalam Negeri" class="h-4 w-4 border-gray-300 text-brand-500 focus:ring-brand-500 dark:border-gray-600 dark:bg-gray-800 dark:ring-offset-gray-900" />
-                        <span class="text-sm font-medium text-gray-700 dark:text-gray-400">Dalam Negeri</span>
-                    </label>
-                    <label class="flex items-center gap-2 cursor-pointer">
-                        <input type="radio" name="tipeNegara" value="Luar Negeri" checked class="h-4 w-4 border-gray-300 text-brand-500 focus:ring-brand-500 dark:border-gray-600 dark:bg-gray-800 dark:ring-offset-gray-900" />
-                        <span class="text-sm font-medium text-gray-700 dark:text-gray-400">Luar Negeri</span>
-                    </label>
+    @if (isLoadingData)
+    {
+        <div class="py-12 text-center text-gray-500">
+            <span class="inline-block h-6 w-6 animate-spin rounded-full border-2 border-solid border-brand-500 border-t-transparent"></span>
+            <span class="ml-2">Memuat data negara...</span>
+        </div>
+    }
+    else
+    {
+        <form @onsubmit="HandleSubmit" method="POST">
+            <div class="space-y-6 p-5 sm:p-6">
+                <div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
+                    <div>
+                        <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">Nama</label>
+                        <input type="text" required @bind="updateRequest.Name"
+                               class="h-11 w-full rounded-lg border appearance-none px-4 py-2.5 text-sm shadow-theme-xs placeholder:text-gray-400 focus:outline-none focus:ring-0 border-gray-300 bg-white text-gray-800 focus:border-brand-500 focus:shadow-focus-ring dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:focus:border-brand-500" />
+                    </div>
+                    <div>
+                        <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">Tipe Negara</label>
+                        <div class="flex h-11 items-center gap-6">
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="radio" name="tipeNegara" checked="@(updateRequest.IsForeign == false)" @onchange="() => updateRequest.IsForeign = false" class="h-4 w-4 border-gray-300 text-brand-500 focus:ring-brand-500 dark:border-gray-600 dark:bg-gray-800 dark:ring-offset-gray-900" />
+                                <span class="text-sm font-medium text-gray-700 dark:text-gray-400">Dalam Negeri</span>
+                            </label>
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="radio" name="tipeNegara" checked="@(updateRequest.IsForeign == true)" @onchange="() => updateRequest.IsForeign = true" class="h-4 w-4 border-gray-300 text-brand-500 focus:ring-brand-500 dark:border-gray-600 dark:bg-gray-800 dark:ring-offset-gray-900" />
+                                <span class="text-sm font-medium text-gray-700 dark:text-gray-400">Luar Negeri</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Section 3: Button -->
+                <div class="flex justify-end pt-4">
+                    <button type="submit" disabled="@isSubmitting" class="inline-flex items-center gap-2 rounded-lg bg-brand-500 px-6 py-3 text-sm font-medium text-white shadow-theme-xs hover:bg-brand-600 disabled:opacity-50">
+                        @if (isSubmitting)
+                        {
+                            <span class="h-4 w-4 animate-spin rounded-full border-2 border-solid border-white border-t-transparent"></span>
+                        }
+                        Ubah
+                    </button>
                 </div>
             </div>
-        </div>
-        
-        <!-- Section 3: Button -->
-        <div class="flex justify-end pt-4">
-            <button class="inline-flex items-center gap-2 rounded-lg bg-brand-500 px-6 py-3 text-sm font-medium text-white shadow-theme-xs hover:bg-brand-600">
-                Ubah
-            </button>
-        </div>
-    </div>
+        </form>
+    }
 </div>
 
 @code {
     [Parameter] public string Id { get; set; } = "";
+
+    private CountryUpdateRequest updateRequest = new();
+    private bool isLoadingData = true;
+    private bool isSubmitting = false;
+    
+    private string _errorMessage = string.Empty;
+    private string errorMessage
+    {
+        get => _errorMessage;
+        set
+        {
+            _errorMessage = value;
+            if (!string.IsNullOrEmpty(value))
+            {
+                TriggerAutoCloseError();
+            }
+        }
+    }
+
+    private System.Threading.CancellationTokenSource? _errorCts;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (int.TryParse(Id, out var countryId))
+        {
+            try
+            {
+                var result = await CountryService.GetDetailAsync(countryId);
+                if (result.Success && result.Data != null)
+                {
+                    var country = result.Data;
+                    updateRequest.Name = country.Name;
+                    updateRequest.IsForeign = country.IsForeign;
+                }
+                else
+                {
+                    errorMessage = result.Message;
+                }
+            }
+            catch (Exception)
+            {
+                errorMessage = "Gagal memuat data negara dari server.";
+            }
+            finally
+            {
+                isLoadingData = false;
+            }
+        }
+        else
+        {
+            errorMessage = "ID Negara tidak valid.";
+            isLoadingData = false;
+        }
+    }
+
+    private async Task HandleSubmit()
+    {
+        isSubmitting = true;
+        errorMessage = string.Empty;
+        StateHasChanged();
+
+        try
+        {
+            var result = await CountryService.UpdateAsync(int.Parse(Id), updateRequest);
+            if (result.Success)
+            {
+                Navigation.NavigateTo($"/countries?success={Uri.EscapeDataString(result.Message)}", forceLoad: false);
+            }
+            else
+            {
+                errorMessage = result.Message;
+            }
+        }
+        catch (Exception)
+        {
+            errorMessage = "Terjadi kesalahan saat memperbarui data negara.";
+        }
+        finally
+        {
+            isSubmitting = false;
+            StateHasChanged();
+        }
+    }
+
+    private async void TriggerAutoCloseError()
+    {
+        _errorCts?.Cancel();
+        _errorCts = new System.Threading.CancellationTokenSource();
+        try
+        {
+            await Task.Delay(5000, _errorCts.Token);
+            _errorMessage = string.Empty;
+            await InvokeAsync(StateHasChanged);
+        }
+        catch (TaskCanceledException) { }
+    }
 }
