@@ -1,4 +1,6 @@
 @page "/users/create"
+@inject UserService UserService
+@inject NavigationManager Navigation
 <PageTitle>Buat Akun Baru</PageTitle>
 
 <!-- Section 1: Header -->
@@ -16,91 +18,144 @@
     </a>
 </div>
 
+@if (!string.IsNullOrEmpty(errorMessage))
+{
+    <div class="mb-6">
+        <Alert Type="error" Message="@errorMessage" OnClose="() => errorMessage = string.Empty" />
+    </div>
+}
+
 <!-- Section 2: Form Input -->
 <div class="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03]">
-    <div class="space-y-6 p-5 sm:p-6">
-        <div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
-            <div>
-                <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">Nama</label>
-                <input type="text" required
-                       class="h-11 w-full rounded-lg border appearance-none px-4 py-2.5 text-sm shadow-theme-xs placeholder:text-gray-400 focus:outline-none focus:ring-0 border-gray-300 bg-white text-gray-800 focus:border-brand-500 focus:shadow-focus-ring dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:focus:border-brand-500" />
-            </div>
-            <div>
-                <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">Email</label>
-                <input type="email" required
-                       class="h-11 w-full rounded-lg border appearance-none px-4 py-2.5 text-sm shadow-theme-xs placeholder:text-gray-400 focus:outline-none focus:ring-0 border-gray-300 bg-white text-gray-800 focus:border-brand-500 focus:shadow-focus-ring dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:focus:border-brand-500" />
-            </div>
-            <div>
-                <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">Password</label>
-                <input type="password" required
-                       class="h-11 w-full rounded-lg border appearance-none px-4 py-2.5 text-sm shadow-theme-xs placeholder:text-gray-400 focus:outline-none focus:ring-0 border-gray-300 bg-white text-gray-800 focus:border-brand-500 focus:shadow-focus-ring dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:focus:border-brand-500" />
-            </div>
-            <div>
-                <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">Roles</label>
-                <!-- Blazor implementation of multiple select -->
-                <div class="relative">
-                    <button @onclick="ToggleDropdown" type="button" class="flex h-11 w-full items-center justify-between rounded-lg border appearance-none px-4 py-2.5 text-sm shadow-theme-xs border-gray-300 bg-white text-gray-800 focus:border-brand-500 focus:shadow-focus-ring dark:border-gray-700 dark:bg-gray-900 dark:text-white/90">
-                        <div class="flex flex-wrap gap-2">
-                            @if (!selectedRoles.Any())
-                            {
-                                <span class="text-gray-400">Pilih Role...</span>
-                            }
-                            else
-                            {
-                                @foreach (var role in selectedRoles)
+    <form @onsubmit="HandleSubmit" method="POST">
+        <div class="space-y-6 p-5 sm:p-6">
+            <div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
+                <div>
+                    <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
+                        Nama <span class="text-error-500">*</span>
+                    </label>
+                    <input type="text" required @bind="createRequest.Name"
+                           class="h-11 w-full rounded-lg border appearance-none px-4 py-2.5 text-sm shadow-theme-xs placeholder:text-gray-400 focus:outline-none focus:ring-0 border-gray-300 bg-white text-gray-800 focus:border-brand-500 focus:shadow-focus-ring dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:focus:border-brand-500" />
+                </div>
+                <div>
+                    <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
+                        Username <span class="text-error-500">*</span>
+                    </label>
+                    <input type="text" required @bind="createRequest.Username"
+                           class="h-11 w-full rounded-lg border appearance-none px-4 py-2.5 text-sm shadow-theme-xs placeholder:text-gray-400 focus:outline-none focus:ring-0 border-gray-300 bg-white text-gray-800 focus:border-brand-500 focus:shadow-focus-ring dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:focus:border-brand-500" />
+                </div>
+                <div>
+                    <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
+                        Email <span class="text-error-500">*</span>
+                    </label>
+                    <input type="email" required @bind="createRequest.Email"
+                           class="h-11 w-full rounded-lg border appearance-none px-4 py-2.5 text-sm shadow-theme-xs placeholder:text-gray-400 focus:outline-none focus:ring-0 border-gray-300 bg-white text-gray-800 focus:border-brand-500 focus:shadow-focus-ring dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:focus:border-brand-500" />
+                </div>
+                <div>
+                    <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
+                        Password <span class="text-error-500">*</span>
+                    </label>
+                    <input type="password" required @bind="createRequest.Password"
+                           class="h-11 w-full rounded-lg border appearance-none px-4 py-2.5 text-sm shadow-theme-xs placeholder:text-gray-400 focus:outline-none focus:ring-0 border-gray-300 bg-white text-gray-800 focus:border-brand-500 focus:shadow-focus-ring dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:focus:border-brand-500" />
+                </div>
+                <div>
+                    <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
+                        Roles <span class="text-error-500">*</span>
+                    </label>
+                    <!-- Blazor implementation of multiple select -->
+                    <div class="relative">
+                        <button @onclick="ToggleDropdown" type="button" class="flex h-11 w-full items-center justify-between rounded-lg border appearance-none px-4 py-2.5 text-sm shadow-theme-xs border-gray-300 bg-white text-gray-800 focus:border-brand-500 focus:shadow-focus-ring dark:border-gray-700 dark:bg-gray-900 dark:text-white/90">
+                            <div class="flex flex-wrap gap-2">
+                                @if (!selectedRoles.Any())
                                 {
-                                    <span class="inline-flex items-center gap-1 rounded bg-gray-100 px-2 py-0.5 text-xs text-gray-600 dark:bg-gray-800 dark:text-gray-300">
-                                        @role
-                                        <span @onclick="() => ToggleRole(role)" @onclick:stopPropagation class="cursor-pointer hover:text-error-500">&times;</span>
-                                    </span>
+                                    <span class="text-gray-400">Pilih Role...</span>
                                 }
-                            }
-                        </div>
-                        <svg class="h-4 w-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
-                    </button>
-                    
-                    @if (isDropdownOpen)
-                    {
-                        <div class="absolute z-10 mt-1 w-full rounded-lg border border-gray-200 bg-white py-1 shadow-lg dark:border-gray-700 dark:bg-gray-800">
-                            @foreach (var role in availableRoles)
-                            {
-                                <label class="flex cursor-pointer items-center px-4 py-2 hover:bg-gray-50 dark:hover:bg-gray-700">
-                                    <input type="checkbox" checked="@selectedRoles.Contains(role)" @onchange="(e) => CheckRole(e, role)" class="mr-3 rounded border-gray-300 text-brand-500 focus:ring-brand-500" />
-                                    <span class="text-sm text-gray-700 dark:text-gray-300">@role</span>
-                                </label>
-                            }
-                        </div>
-                        <!-- Backdrop -->
-                        <div class="fixed inset-0 z-0" @onclick="ToggleDropdown"></div>
-                    }
+                                else
+                                {
+                                    @foreach (var role in selectedRoles)
+                                    {
+                                        var currentRole = role;
+                                        <span class="inline-flex items-center gap-1 rounded bg-gray-100 px-2 py-0.5 text-xs text-gray-600 dark:bg-gray-800 dark:text-gray-300">
+                                            @currentRole.Name
+                                            <span @onclick="() => ToggleRole(currentRole)" @onclick:stopPropagation class="cursor-pointer hover:text-error-500">&times;</span>
+                                        </span>
+                                    }
+                                }
+                            </div>
+                            <svg class="h-4 w-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                        </button>
+                        
+                        @if (isDropdownOpen)
+                        {
+                            <div class="absolute z-30 mt-1 w-full rounded-lg border border-gray-200 bg-white py-1 shadow-lg dark:border-gray-700 dark:bg-gray-800 max-h-60 overflow-y-auto">
+                                @foreach (var role in availableRoles)
+                                {
+                                    var currentRole = role;
+                                    <label class="flex cursor-pointer items-center px-4 py-2 hover:bg-gray-50 dark:hover:bg-gray-700">
+                                        <input type="checkbox" checked="@selectedRoles.Any(r => r.Id == currentRole.Id)" @onchange="(e) => CheckRole(e, currentRole)" class="mr-3 rounded border-gray-300 text-brand-500 focus:ring-brand-500" />
+                                        <span class="text-sm text-gray-700 dark:text-gray-300">@currentRole.Name</span>
+                                    </label>
+                                }
+                            </div>
+                            <!-- Backdrop -->
+                            <div class="fixed inset-0 z-20" @onclick="ToggleDropdown"></div>
+                        }
+                    </div>
                 </div>
             </div>
+            
+            <!-- Section 3: Button -->
+            <div class="flex justify-end pt-4">
+                <button type="submit" disabled="@isSubmitting" class="inline-flex items-center gap-2 rounded-lg bg-brand-500 px-6 py-3 text-sm font-medium text-white shadow-theme-xs hover:bg-brand-600 disabled:opacity-50">
+                    @if (isSubmitting)
+                    {
+                        <span class="h-4 w-4 animate-spin rounded-full border-2 border-solid border-white border-t-transparent"></span>
+                    }
+                    Buat
+                </button>
+            </div>
         </div>
-        
-        <!-- Section 3: Button -->
-        <div class="flex justify-end pt-4">
-            <button class="inline-flex items-center gap-2 rounded-lg bg-brand-500 px-6 py-3 text-sm font-medium text-white shadow-theme-xs hover:bg-brand-600">
-                Buat
-            </button>
-        </div>
-    </div>
+    </form>
 </div>
 
 @code {
+    private UserCreateRequest createRequest = new();
+    private List<RoleItemModel> availableRoles = new();
+    private List<RoleItemModel> selectedRoles = new();
     private bool isDropdownOpen = false;
-    private List<string> availableRoles = new() { "Admin", "User", "Manager" };
-    private HashSet<string> selectedRoles = new();
+    private bool isSubmitting = false;
+    private string errorMessage = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var result = await UserService.GetRolesAsync();
+            if (result.Success && result.Data != null)
+            {
+                availableRoles = result.Data;
+            }
+            else
+            {
+                errorMessage = "Gagal memuat roles dari server.";
+            }
+        }
+        catch (Exception)
+        {
+            errorMessage = "Gagal menghubungi server untuk memuat roles.";
+        }
+    }
 
     private void ToggleDropdown()
     {
         isDropdownOpen = !isDropdownOpen;
     }
 
-    private void ToggleRole(string role)
+    private void ToggleRole(RoleItemModel role)
     {
-        if (selectedRoles.Contains(role))
+        if (selectedRoles.Any(r => r.Id == role.Id))
         {
-            selectedRoles.Remove(role);
+            selectedRoles.RemoveAll(r => r.Id == role.Id);
         }
         else
         {
@@ -108,12 +163,55 @@
         }
     }
 
-    private void CheckRole(ChangeEventArgs e, string role)
+    private void CheckRole(ChangeEventArgs e, RoleItemModel role)
     {
         bool isChecked = bool.TryParse(e.Value?.ToString(), out var parsed) && parsed;
         if (isChecked)
-            selectedRoles.Add(role);
+        {
+            if (!selectedRoles.Any(r => r.Id == role.Id))
+            {
+                selectedRoles.Add(role);
+            }
+        }
         else
-            selectedRoles.Remove(role);
+        {
+            selectedRoles.RemoveAll(r => r.Id == role.Id);
+        }
+    }
+
+    private async Task HandleSubmit()
+    {
+        if (selectedRoles.Count == 0)
+        {
+            errorMessage = "Minimal pilih 1 role.";
+            return;
+        }
+
+        isSubmitting = true;
+        errorMessage = string.Empty;
+        StateHasChanged();
+
+        try
+        {
+            createRequest.RoleIds = selectedRoles.Select(r => r.Id).ToList();
+            var result = await UserService.CreateAsync(createRequest);
+            if (result.Success)
+            {
+                Navigation.NavigateTo($"/users?success={Uri.EscapeDataString(result.Message)}", forceLoad: false);
+            }
+            else
+            {
+                errorMessage = result.Message;
+            }
+        }
+        catch (Exception)
+        {
+            errorMessage = "Terjadi kesalahan saat menyimpan data pengguna.";
+        }
+        finally
+        {
+            isSubmitting = false;
+            StateHasChanged();
+        }
     }
 }
