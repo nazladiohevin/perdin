@@ -86,6 +86,8 @@ namespace Perdin.WebApi.Controllers
         {
             // Global Query Filter (DeletedAt == null) applies automatically
             var users = await _context.Users
+                .Include(u => u.Roles)
+                .OrderByDescending(u => u.CreatedAt)
                 .Select(u => new UserResponse
                 {
                     Id = u.Id,
@@ -93,7 +95,8 @@ namespace Perdin.WebApi.Controllers
                     Username = u.Username,
                     Email = u.Email,
                     CreatedAt = u.CreatedAt,
-                    UpdatedAt = u.UpdatedAt
+                    UpdatedAt = u.UpdatedAt,
+                    Roles = u.Roles.Select(r => new RoleItem { Id = r.Id, Name = r.Name }).ToList()
                 })
                 .ToListAsync();
 
@@ -104,6 +107,7 @@ namespace Perdin.WebApi.Controllers
         public async Task<IActionResult> GetById(int id)
         {
             var user = await _context.Users
+                .Include(u => u.Roles)
                 .Where(u => u.Id == id)
                 .Select(u => new UserResponse
                 {
@@ -112,7 +116,8 @@ namespace Perdin.WebApi.Controllers
                     Username = u.Username,
                     Email = u.Email,
                     CreatedAt = u.CreatedAt,
-                    UpdatedAt = u.UpdatedAt
+                    UpdatedAt = u.UpdatedAt,
+                    Roles = u.Roles.Select(r => new RoleItem { Id = r.Id, Name = r.Name }).ToList()
                 })
                 .FirstOrDefaultAsync();
 
@@ -122,6 +127,17 @@ namespace Perdin.WebApi.Controllers
             }
 
             return Ok(ApiResponse<UserResponse>.SuccessResponse(user, "Akun ditemukan"));
+        }
+
+        [HttpGet("/api/roles")]
+        [Authorize(Roles = "ADMIN")]
+        public async Task<IActionResult> GetRoles()
+        {
+            var roles = await _context.Roles
+                .Select(r => new RoleItem { Id = r.Id, Name = r.Name })
+                .ToListAsync();
+
+            return Ok(ApiResponse<List<RoleItem>>.SuccessResponse(roles, "Roles berhasil diambil"));
         }
 
         [HttpPut("{id}")]
@@ -159,7 +175,10 @@ namespace Perdin.WebApi.Controllers
                 user.Name = request.Name;
                 user.Username = request.Username;
                 user.Email = request.Email;
-                user.Password = BCrypt.Net.BCrypt.HashPassword(request.Password);
+                if (!string.IsNullOrEmpty(request.Password))
+                {
+                    user.Password = BCrypt.Net.BCrypt.HashPassword(request.Password);
+                }
                 user.UpdatedAt = DateTime.UtcNow;
 
                 user.Roles.Clear();
