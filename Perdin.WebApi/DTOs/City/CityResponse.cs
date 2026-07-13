@@ -1,3 +1,5 @@
+using Perdin.WebApi.DTOs.Province;
+
 namespace Perdin.WebApi.DTOs.City
 {
     public class CityResponse
@@ -9,5 +11,6 @@ namespace Perdin.WebApi.DTOs.City
         public decimal Longitude { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime? UpdatedAt { get; set; }
+        public ProvinceResponse? Province { get; set; }
     }
 }
