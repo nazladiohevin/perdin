@@ -1,4 +1,6 @@
 @page "/cities/{id}/edit"
+@inject CityService CityService
+@inject NavigationManager Navigation
 <PageTitle>Edit Kota</PageTitle>
 
 <!-- Section 1: Header -->
@@ -16,50 +18,165 @@
     </a>
 </div>
 
+@if (!string.IsNullOrEmpty(errorMessage))
+{
+    <div class="mb-6">
+        <Alert Type="error" Message="@errorMessage" OnClose="() => errorMessage = string.Empty" />
+    </div>
+}
+
 <!-- Section 2: Form Input -->
 <div class="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03]">
-    <div class="space-y-6 p-5 sm:p-6">
-        <div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
-            <div>
-                <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">Nama</label>
-                <input type="text" required value="Surabaya"
-                       class="h-11 w-full rounded-lg border appearance-none px-4 py-2.5 text-sm shadow-theme-xs placeholder:text-gray-400 focus:outline-none focus:ring-0 border-gray-300 bg-white text-gray-800 focus:border-brand-500 focus:shadow-focus-ring dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:focus:border-brand-500" />
-            </div>
-            <div>
-                <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">Provinsi</label>
-                <div class="relative">
-                    <select required class="h-11 w-full rounded-lg border appearance-none px-4 py-2.5 text-sm shadow-theme-xs placeholder:text-gray-400 focus:outline-none focus:ring-0 border-gray-300 bg-white text-gray-800 focus:border-brand-500 focus:shadow-focus-ring dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:focus:border-brand-500">
-                        <option value="">Pilih Provinsi</option>
-                        <option value="Jawa Timur" selected>Jawa Timur</option>
-                        <option value="Jawa Barat">Jawa Barat</option>
-                        <option value="Jawa Tengah">Jawa Tengah</option>
-                    </select>
-                    <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4">
-                        <svg class="h-4 w-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+    @if (isLoadingData)
+    {
+        <div class="py-12 text-center text-gray-500">
+            <span class="inline-block h-6 w-6 animate-spin rounded-full border-2 border-solid border-brand-500 border-t-transparent"></span>
+            <span class="ml-2">Memuat data kota...</span>
+        </div>
+    }
+    else
+    {
+        <form @onsubmit="HandleSubmit" method="POST">
+            <div class="space-y-6 p-5 sm:p-6">
+                <div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
+                    <div>
+                        <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
+                            Nama <span class="text-error-500">*</span>
+                        </label>
+                        <input type="text" required @bind="updateRequest.Name"
+                               class="h-11 w-full rounded-lg border appearance-none px-4 py-2.5 text-sm shadow-theme-xs placeholder:text-gray-400 focus:outline-none focus:ring-0 border-gray-300 bg-white text-gray-800 focus:border-brand-500 focus:shadow-focus-ring dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:focus:border-brand-500" />
+                    </div>
+                    <div>
+                        <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
+                            Provinsi <span class="text-error-500">*</span>
+                        </label>
+                        <div class="relative">
+                            <select required @bind="updateRequest.ProvinceId" class="h-11 w-full rounded-lg border appearance-none px-4 py-2.5 text-sm shadow-theme-xs focus:outline-none focus:ring-0 border-gray-300 bg-white text-gray-800 focus:border-brand-500 focus:shadow-focus-ring dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:focus:border-brand-500">
+                                <option value="">Pilih Provinsi</option>
+                                @foreach (var province in provinces)
+                                {
+                                    <option value="@province.Id">@province.Name</option>
+                                }
+                            </select>
+                            <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4">
+                                <svg class="h-4 w-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                            </div>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
+                            Latitude <span class="text-error-500">*</span>
+                        </label>
+                        <input type="number" step="any" required @bind="updateRequest.Latitude"
+                               class="h-11 w-full rounded-lg border appearance-none px-4 py-2.5 text-sm shadow-theme-xs placeholder:text-gray-400 focus:outline-none focus:ring-0 border-gray-300 bg-white text-gray-800 focus:border-brand-500 focus:shadow-focus-ring dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:focus:border-brand-500" />
+                    </div>
+                    <div>
+                        <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
+                            Longitude <span class="text-error-500">*</span>
+                        </label>
+                        <input type="number" step="any" required @bind="updateRequest.Longitude"
+                               class="h-11 w-full rounded-lg border appearance-none px-4 py-2.5 text-sm shadow-theme-xs placeholder:text-gray-400 focus:outline-none focus:ring-0 border-gray-300 bg-white text-gray-800 focus:border-brand-500 focus:shadow-focus-ring dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:focus:border-brand-500" />
                     </div>
                 </div>
+                
+                <!-- Section 3: Button -->
+                <div class="flex justify-end pt-4">
+                    <button type="submit" disabled="@isSubmitting" class="inline-flex items-center gap-2 rounded-lg bg-brand-500 px-6 py-3 text-sm font-medium text-white shadow-theme-xs hover:bg-brand-600 disabled:opacity-50">
+                        @if (isSubmitting)
+                        {
+                            <span class="h-4 w-4 animate-spin rounded-full border-2 border-solid border-white border-t-transparent"></span>
+                        }
+                        Ubah
+                    </button>
+                </div>
             </div>
-            <div>
-                <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">Latitude</label>
-                <input type="text" required value="-7.250445"
-                       class="h-11 w-full rounded-lg border appearance-none px-4 py-2.5 text-sm shadow-theme-xs placeholder:text-gray-400 focus:outline-none focus:ring-0 border-gray-300 bg-white text-gray-800 focus:border-brand-500 focus:shadow-focus-ring dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:focus:border-brand-500" />
-            </div>
-            <div>
-                <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">Longitude</label>
-                <input type="text" required value="112.768845"
-                       class="h-11 w-full rounded-lg border appearance-none px-4 py-2.5 text-sm shadow-theme-xs placeholder:text-gray-400 focus:outline-none focus:ring-0 border-gray-300 bg-white text-gray-800 focus:border-brand-500 focus:shadow-focus-ring dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:focus:border-brand-500" />
-            </div>
-        </div>
-        
-        <!-- Section 3: Button -->
-        <div class="flex justify-end pt-4">
-            <button class="inline-flex items-center gap-2 rounded-lg bg-brand-500 px-6 py-3 text-sm font-medium text-white shadow-theme-xs hover:bg-brand-600">
-                Ubah
-            </button>
-        </div>
-    </div>
+        </form>
+    }
 </div>
 
 @code {
     [Parameter] public string Id { get; set; } = "";
+
+    private CityUpdateRequest updateRequest = new();
+    private List<ProvinceListItem> provinces = new();
+    private bool isLoadingData = true;
+    private bool isSubmitting = false;
+    private string errorMessage = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (int.TryParse(Id, out var cityId))
+        {
+            try
+            {
+                // Fetch provinces list
+                var provincesResult = await CityService.GetProvincesAsync();
+                if (provincesResult.Success && provincesResult.Data != null)
+                {
+                    provinces = provincesResult.Data;
+                }
+                else
+                {
+                    errorMessage = "Gagal memuat daftar provinsi dari server.";
+                }
+
+                // Fetch city detail
+                var cityResult = await CityService.GetDetailAsync(cityId);
+                if (cityResult.Success && cityResult.Data != null)
+                {
+                    var city = cityResult.Data;
+                    updateRequest.Name = city.Name;
+                    updateRequest.ProvinceId = city.ProvinceId;
+                    updateRequest.Latitude = city.Latitude;
+                    updateRequest.Longitude = city.Longitude;
+                }
+                else
+                {
+                    errorMessage = cityResult.Message;
+                }
+            }
+            catch (Exception)
+            {
+                errorMessage = "Gagal menghubungi server untuk memuat data kota.";
+            }
+            finally
+            {
+                isLoadingData = false;
+            }
+        }
+        else
+        {
+            errorMessage = "ID Kota tidak valid.";
+            isLoadingData = false;
+        }
+    }
+
+    private async Task HandleSubmit()
+    {
+        isSubmitting = true;
+        errorMessage = string.Empty;
+        StateHasChanged();
+
+        try
+        {
+            var result = await CityService.UpdateAsync(int.Parse(Id), updateRequest);
+            if (result.Success)
+            {
+                Navigation.NavigateTo($"/cities?success={Uri.EscapeDataString(result.Message)}", forceLoad: false);
+            }
+            else
+            {
+                errorMessage = result.Message;
+            }
+        }
+        catch (Exception)
+        {
+            errorMessage = "Terjadi kesalahan saat memperbarui data kota.";
+        }
+        finally
+        {
+            isSubmitting = false;
+            StateHasChanged();
+        }
+    }
 }

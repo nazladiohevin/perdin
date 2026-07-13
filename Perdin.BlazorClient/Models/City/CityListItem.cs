@@ -1,16 +1,16 @@
-using Perdin.WebApi.DTOs.Province;
+using Perdin.BlazorClient.Models.Province;
 
-namespace Perdin.WebApi.DTOs.City
+namespace Perdin.BlazorClient.Models.City
 {
-    public class CityResponse
+    public class CityListItem
     {
         public int Id { get; set; }
         public int ProvinceId { get; set; }
-        public string Name { get; set; } = null!;
+        public string Name { get; set; } = string.Empty;
         public decimal Latitude { get; set; }
         public decimal Longitude { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime? UpdatedAt { get; set; }
-        public ProvinceResponse? Province { get; set; }
+        public ProvinceListItem? Province { get; set; }
     }
 }
