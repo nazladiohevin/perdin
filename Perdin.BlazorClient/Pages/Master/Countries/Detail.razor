@@ -1,4 +1,6 @@
 @page "/countries/{id}"
+@inject CountryService CountryService
+@inject NavigationManager Navigation
 <PageTitle>Detail Negara</PageTitle>
 
 <!-- Section 1: Header -->
@@ -16,32 +18,85 @@
     </a>
 </div>
 
+@if (!string.IsNullOrEmpty(errorMessage))
+{
+    <div class="mb-6">
+        <Alert Type="error" Message="@errorMessage" OnClose="() => errorMessage = string.Empty" />
+    </div>
+}
+
 <!-- Section 2: Form Input -->
 <div class="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03]">
-    <div class="space-y-6 p-5 sm:p-6">
-        <div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
-            <div>
-                <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">Nama</label>
-                <input type="text" readonly value="Singapura"
-                       class="h-11 w-full rounded-lg border appearance-none px-4 py-2.5 text-sm shadow-theme-xs placeholder:text-gray-400 focus:outline-none focus:ring-0 border-gray-300 bg-gray-50 text-gray-500 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400" />
-            </div>
-            <div>
-                <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">Tipe Negara</label>
-                <div class="flex h-11 items-center gap-6">
-                    <label class="flex items-center gap-2 cursor-not-allowed">
-                        <input type="radio" disabled name="tipeNegara" value="Dalam Negeri" class="h-4 w-4 border-gray-300 text-brand-500 opacity-50 dark:border-gray-600 dark:bg-gray-800 dark:ring-offset-gray-900" />
-                        <span class="text-sm font-medium text-gray-400 dark:text-gray-500">Dalam Negeri</span>
-                    </label>
-                    <label class="flex items-center gap-2 cursor-not-allowed">
-                        <input type="radio" disabled checked name="tipeNegara" value="Luar Negeri" class="h-4 w-4 border-gray-300 text-brand-500 opacity-50 dark:border-gray-600 dark:bg-gray-800 dark:ring-offset-gray-900" />
-                        <span class="text-sm font-medium text-gray-400 dark:text-gray-500">Luar Negeri</span>
-                    </label>
+    @if (isLoading)
+    {
+        <div class="py-12 text-center text-gray-500">
+            <span class="inline-block h-6 w-6 animate-spin rounded-full border-2 border-solid border-brand-500 border-t-transparent"></span>
+            <span class="ml-2">Memuat detail negara...</span>
+        </div>
+    }
+    else if (country != null)
+    {
+        <div class="space-y-6 p-5 sm:p-6">
+            <div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
+                <div>
+                    <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">Nama</label>
+                    <input type="text" readonly value="@country.Name"
+                           class="h-11 w-full rounded-lg border appearance-none px-4 py-2.5 text-sm shadow-theme-xs placeholder:text-gray-400 focus:outline-none focus:ring-0 border-gray-300 bg-gray-50 text-gray-500 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400" />
+                </div>
+                <div>
+                    <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">Tipe Negara</label>
+                    <div class="flex h-11 items-center gap-6">
+                        <label class="flex items-center gap-2 cursor-not-allowed">
+                            <input type="radio" disabled checked="@(!country.IsForeign)" name="tipeNegara" class="h-4 w-4 border-gray-300 text-brand-500 opacity-50 dark:border-gray-600 dark:bg-gray-800 dark:ring-offset-gray-900" />
+                            <span class="text-sm font-medium text-gray-400 dark:text-gray-500">Dalam Negeri</span>
+                        </label>
+                        <label class="flex items-center gap-2 cursor-not-allowed">
+                            <input type="radio" disabled checked="@(country.IsForeign)" name="tipeNegara" class="h-4 w-4 border-gray-300 text-brand-500 opacity-50 dark:border-gray-600 dark:bg-gray-800 dark:ring-offset-gray-900" />
+                            <span class="text-sm font-medium text-gray-400 dark:text-gray-500">Luar Negeri</span>
+                        </label>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
+    }
 </div>
 
 @code {
     [Parameter] public string Id { get; set; } = "";
+
+    private bool isLoading = true;
+    private CountryDetailItem? country;
+    private string errorMessage = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (int.TryParse(Id, out var countryId))
+        {
+            try
+            {
+                var result = await CountryService.GetDetailAsync(countryId);
+                if (result.Success && result.Data != null)
+                {
+                    country = result.Data;
+                }
+                else
+                {
+                    errorMessage = result.Message;
+                }
+            }
+            catch (Exception)
+            {
+                errorMessage = "Gagal memuat detail negara dari server.";
+            }
+            finally
+            {
+                isLoading = false;
+            }
+        }
+        else
+        {
+            errorMessage = "ID Negara tidak valid.";
+            isLoading = false;
+        }
+    }
 }

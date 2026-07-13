@@ -1,4 +1,7 @@
 @page "/countries"
+@inject CountryService CountryService
+@inject NavigationManager Navigation
+@inject IJSRuntime JSRuntime
 <PageTitle>Negara</PageTitle>
 
 <div class="mb-6 flex items-center justify-between">
@@ -14,6 +17,20 @@
         Buat Negara Baru
     </a>
 </div>
+
+@if (!string.IsNullOrEmpty(successMessage))
+{
+    <div class="mb-6">
+        <Alert Type="success" Message="@successMessage" OnClose="() => successMessage = string.Empty" />
+    </div>
+}
+
+@if (!string.IsNullOrEmpty(errorMessage))
+{
+    <div class="mb-6">
+        <Alert Type="error" Message="@errorMessage" OnClose="() => errorMessage = string.Empty" />
+    </div>
+}
 
 <div class="overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03]">
     <div class="max-w-full overflow-x-auto">
@@ -38,67 +55,248 @@
                 </tr>
             </thead>
             <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
-                <!-- Row 1 -->
-                <tr>
-                    <td class="px-5 py-4 sm:px-6">
-                        <p class="text-gray-500 text-theme-sm dark:text-gray-400">1</p>
-                    </td>
-                    <td class="px-5 py-4 sm:px-6">
-                        <p class="font-medium text-gray-800 text-theme-sm dark:text-white/90">Indonesia</p>
-                    </td>
-                    <td class="px-5 py-4 sm:px-6">
-                        <span class="inline-flex items-center gap-1.5 rounded-full bg-success-50 px-2.5 py-1 text-xs font-medium text-success-700 dark:bg-success-500/10 dark:text-success-500">
-                            Dalam Negeri
-                        </span>
-                    </td>
-                    <td class="px-5 py-4 sm:px-6">
-                        <p class="text-gray-500 text-theme-sm dark:text-gray-400">12 Jul 2025</p>
-                    </td>
-                    <td class="px-5 py-4 sm:px-6 text-right">
-                        <div class="flex items-center justify-end gap-3">
-                            <a href="/countries/1" class="text-gray-500 hover:text-brand-500 dark:text-gray-400 dark:hover:text-brand-400" title="Detail">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
-                            </a>
-                            <a href="/countries/1/edit" class="text-gray-500 hover:text-brand-500 dark:text-gray-400 dark:hover:text-brand-400" title="Edit">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
-                            </a>
-                            <button class="text-gray-500 hover:text-error-500 dark:text-gray-400 dark:hover:text-error-400" title="Delete">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
-                            </button>
-                        </div>
-                    </td>
-                </tr>
-                <!-- Row 2 -->
-                <tr>
-                    <td class="px-5 py-4 sm:px-6">
-                        <p class="text-gray-500 text-theme-sm dark:text-gray-400">2</p>
-                    </td>
-                    <td class="px-5 py-4 sm:px-6">
-                        <p class="font-medium text-gray-800 text-theme-sm dark:text-white/90">Singapura</p>
-                    </td>
-                    <td class="px-5 py-4 sm:px-6">
-                        <span class="inline-flex items-center gap-1.5 rounded-full bg-warning-50 px-2.5 py-1 text-xs font-medium text-warning-700 dark:bg-warning-500/10 dark:text-warning-500">
-                            Luar Negeri
-                        </span>
-                    </td>
-                    <td class="px-5 py-4 sm:px-6">
-                        <p class="text-gray-500 text-theme-sm dark:text-gray-400">12 Jul 2025</p>
-                    </td>
-                    <td class="px-5 py-4 sm:px-6 text-right">
-                        <div class="flex items-center justify-end gap-3">
-                            <a href="/countries/2" class="text-gray-500 hover:text-brand-500 dark:text-gray-400 dark:hover:text-brand-400" title="Detail">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
-                            </a>
-                            <a href="/countries/2/edit" class="text-gray-500 hover:text-brand-500 dark:text-gray-400 dark:hover:text-brand-400" title="Edit">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
-                            </a>
-                            <button class="text-gray-500 hover:text-error-500 dark:text-gray-400 dark:hover:text-error-400" title="Delete">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
-                            </button>
-                        </div>
-                    </td>
-                </tr>
+                @if (isLoading)
+                {
+                    <tr>
+                        <td colspan="5" class="px-5 py-8 text-center text-gray-500">
+                            <span class="inline-block h-6 w-6 animate-spin rounded-full border-2 border-solid border-brand-500 border-t-transparent"></span>
+                            <span class="ml-2">Memuat data negara...</span>
+                        </td>
+                    </tr>
+                }
+                else if (countries.Count == 0)
+                {
+                    <tr>
+                        <td colspan="5" class="px-5 py-8 text-center text-gray-500">
+                            Tidak ada data negara.
+                        </td>
+                    </tr>
+                }
+                else
+                {
+                    int index = 1;
+                    @foreach (var country in countries)
+                    {
+                        var currentCountry = country;
+                        var currentIndex = index++;
+                        <tr>
+                            <td class="px-5 py-4 sm:px-6">
+                                <p class="text-gray-500 text-theme-sm dark:text-gray-400">@currentIndex</p>
+                            </td>
+                            <td class="px-5 py-4 sm:px-6">
+                                <p class="font-medium text-gray-800 text-theme-sm dark:text-white/90">@currentCountry.Name</p>
+                            </td>
+                            <td class="px-5 py-4 sm:px-6">
+                                @if (currentCountry.IsForeign)
+                                {
+                                    <span class="inline-flex items-center gap-1.5 rounded-full bg-warning-50 px-2.5 py-1 text-xs font-medium text-warning-700 dark:bg-warning-500/10 dark:text-warning-500">
+                                        Luar Negeri
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="inline-flex items-center gap-1.5 rounded-full bg-success-50 px-2.5 py-1 text-xs font-medium text-success-700 dark:bg-success-500/10 dark:text-success-500">
+                                        Dalam Negeri
+                                    </span>
+                                }
+                            </td>
+                            <td class="px-5 py-4 sm:px-6">
+                                <p class="text-gray-500 text-theme-sm dark:text-gray-400">@FormatCreatedAt(currentCountry.CreatedAt)</p>
+                            </td>
+                            <td class="px-5 py-4 sm:px-6 text-right">
+                                <div class="flex items-center justify-end gap-3">
+                                    <a href="/countries/@currentCountry.Id" class="text-gray-500 hover:text-brand-500 dark:text-gray-400 dark:hover:text-brand-400" title="Detail">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                                    </a>
+                                    <a href="/countries/@currentCountry.Id/edit" class="text-gray-500 hover:text-brand-500 dark:text-gray-400 dark:hover:text-brand-400" title="Edit">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                                    </a>
+                                    <button type="button" @onclick="() => PromptDelete(currentCountry.Id, currentCountry.Name)" class="text-gray-500 hover:text-error-500 dark:text-gray-400 dark:hover:text-error-400" title="Delete">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                }
             </tbody>
         </table>
     </div>
 </div>
+
+<ConfirmDeleteModal
+    Visible="showDeleteModal"
+    Message="@deleteConfirmMessage"
+    IsLoading="isDeleting"
+    OnCancel="CancelDelete"
+    OnConfirm="ConfirmDelete" />
+
+@code {
+    [Parameter]
+    [SupplyParameterFromQuery(Name = "success")]
+    public string? Success { get; set; }
+
+    private bool isLoading = true;
+    private List<CountryListItem> countries = new();
+    
+    private string _successMessage = string.Empty;
+    private string successMessage
+    {
+        get => _successMessage;
+        set
+        {
+            _successMessage = value;
+            if (!string.IsNullOrEmpty(value))
+            {
+                TriggerAutoCloseSuccess();
+            }
+        }
+    }
+
+    private string _errorMessage = string.Empty;
+    private string errorMessage
+    {
+        get => _errorMessage;
+        set
+        {
+            _errorMessage = value;
+            if (!string.IsNullOrEmpty(value))
+            {
+                TriggerAutoCloseError();
+            }
+        }
+    }
+
+    private System.Threading.CancellationTokenSource? _successCts;
+    private System.Threading.CancellationTokenSource? _errorCts;
+
+    // Delete confirmation state
+    private bool showDeleteModal = false;
+    private int deleteTargetId;
+    private string deleteConfirmMessage = string.Empty;
+    private bool isDeleting = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadData();
+    }
+
+    protected override void OnParametersSet()
+    {
+        if (!string.IsNullOrEmpty(Success))
+        {
+            successMessage = Success;
+        }
+    }
+
+    private async Task LoadData()
+    {
+        isLoading = true;
+        errorMessage = string.Empty;
+        StateHasChanged();
+
+        try
+        {
+            var result = await CountryService.GetListAsync();
+            if (result.Success && result.Data != null)
+            {
+                countries = result.Data;
+            }
+            else
+            {
+                errorMessage = result.Message;
+            }
+        }
+        catch (Exception)
+        {
+            errorMessage = "Gagal memuat data negara dari server. Silakan coba lagi.";
+        }
+        finally
+        {
+            isLoading = false;
+            StateHasChanged();
+        }
+    }
+
+    private void PromptDelete(int id, string name)
+    {
+        deleteTargetId = id;
+        deleteConfirmMessage = $"Apakah Anda yakin ingin menghapus negara <strong>{name}</strong>?";
+        showDeleteModal = true;
+    }
+
+    private void CancelDelete()
+    {
+        showDeleteModal = false;
+        deleteTargetId = 0;
+        deleteConfirmMessage = string.Empty;
+    }
+
+    private async Task ConfirmDelete()
+    {
+        isDeleting = true;
+        errorMessage = string.Empty;
+        StateHasChanged();
+
+        try
+        {
+            var result = await CountryService.DeleteAsync(deleteTargetId);
+            if (result.Success)
+            {
+                successMessage = result.Message;
+                showDeleteModal = false;
+                await LoadData();
+            }
+            else
+            {
+                errorMessage = result.Message;
+                showDeleteModal = false;
+                await JSRuntime.InvokeVoidAsync("scrollToTop");
+            }
+        }
+        catch (Exception)
+        {
+            errorMessage = "Terjadi kesalahan saat menghubungi server untuk menghapus data.";
+            showDeleteModal = false;
+            await JSRuntime.InvokeVoidAsync("scrollToTop");
+        }
+        finally
+        {
+            isDeleting = false;
+            StateHasChanged();
+        }
+    }
+
+    private async void TriggerAutoCloseSuccess()
+    {
+        _successCts?.Cancel();
+        _successCts = new System.Threading.CancellationTokenSource();
+        try
+        {
+            await Task.Delay(5000, _successCts.Token);
+            _successMessage = string.Empty;
+            await InvokeAsync(StateHasChanged);
+        }
+        catch (TaskCanceledException) { }
+    }
+
+    private async void TriggerAutoCloseError()
+    {
+        _errorCts?.Cancel();
+        _errorCts = new System.Threading.CancellationTokenSource();
+        try
+        {
+            await Task.Delay(5000, _errorCts.Token);
+            _errorMessage = string.Empty;
+            await InvokeAsync(StateHasChanged);
+        }
+        catch (TaskCanceledException) { }
+    }
+
+    private string FormatCreatedAt(DateTime dt)
+    {
+        var bulan = new[] { "Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agt", "Sep", "Okt", "Nov", "Des" };
+        var localTime = dt.ToLocalTime();
+        return $"{localTime.Day:D2} {bulan[localTime.Month - 1]} {localTime.Year}";
+    }
+}
