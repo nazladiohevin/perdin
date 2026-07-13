@@ -1,4 +1,6 @@
 @page "/provinces/create"
+@inject ProvinceService ProvinceService
+@inject NavigationManager Navigation
 <PageTitle>Buat Provinsi Baru</PageTitle>
 
 <!-- Section 1: Header -->
@@ -16,41 +18,89 @@
     </a>
 </div>
 
+@if (!string.IsNullOrEmpty(errorMessage))
+{
+    <div class="mb-6">
+        <Alert Type="error" Message="@errorMessage" OnClose="() => errorMessage = string.Empty" />
+    </div>
+}
+
 <!-- Section 2: Form Input -->
 <div class="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03]">
-    <div class="space-y-6 p-5 sm:p-6">
-        <div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
-            <div>
-                <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">Nama</label>
-                <input type="text" required
-                       class="h-11 w-full rounded-lg border appearance-none px-4 py-2.5 text-sm shadow-theme-xs placeholder:text-gray-400 focus:outline-none focus:ring-0 border-gray-300 bg-white text-gray-800 focus:border-brand-500 focus:shadow-focus-ring dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:focus:border-brand-500" />
-            </div>
-            <div>
-                <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">Pulau</label>
-                <div class="relative">
-                    <select required class="h-11 w-full rounded-lg border appearance-none px-4 py-2.5 text-sm shadow-theme-xs placeholder:text-gray-400 focus:outline-none focus:ring-0 border-gray-300 bg-white text-gray-800 focus:border-brand-500 focus:shadow-focus-ring dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:focus:border-brand-500">
-                        <option value="">Pilih Pulau</option>
-                        <option value="Sumatera">Sumatera</option>
-                        <option value="Jawa">Jawa</option>
-                        <option value="Kalimantan">Kalimantan</option>
-                        <option value="Sulawesi">Sulawesi</option>
-                        <option value="Papua">Papua</option>
-                        <option value="Bali">Bali</option>
-                        <option value="Nusa Tenggara">Nusa Tenggara</option>
-                        <option value="Maluku">Maluku</option>
-                    </select>
-                    <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4">
-                        <svg class="h-4 w-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+    <form @onsubmit="HandleSubmit" method="POST">
+        <div class="space-y-6 p-5 sm:p-6">
+            <div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
+                <div>
+                    <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">Nama</label>
+                    <input type="text" required @bind="createRequest.Name"
+                           class="h-11 w-full rounded-lg border appearance-none px-4 py-2.5 text-sm shadow-theme-xs placeholder:text-gray-400 focus:outline-none focus:ring-0 border-gray-300 bg-white text-gray-800 focus:border-brand-500 focus:shadow-focus-ring dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:focus:border-brand-500" />
+                </div>
+                <div>
+                    <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">Pulau</label>
+                    <div class="relative">
+                        <select required @bind="createRequest.Island" class="h-11 w-full rounded-lg border appearance-none px-4 py-2.5 text-sm shadow-theme-xs placeholder:text-gray-400 focus:outline-none focus:ring-0 border-gray-300 bg-white text-gray-800 focus:border-brand-500 focus:shadow-focus-ring dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:focus:border-brand-500">
+                            <option value="">Pilih Pulau</option>
+                            <option value="Sumatera">Sumatera</option>
+                            <option value="Jawa">Jawa</option>
+                            <option value="Kalimantan">Kalimantan</option>
+                            <option value="Sulawesi">Sulawesi</option>
+                            <option value="Papua">Papua</option>
+                            <option value="Bali">Bali</option>
+                            <option value="Nusa Tenggara">Nusa Tenggara</option>
+                            <option value="Maluku">Maluku</option>
+                        </select>
+                        <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4">
+                            <svg class="h-4 w-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                        </div>
                     </div>
                 </div>
             </div>
+            
+            <!-- Section 3: Button -->
+            <div class="flex justify-end pt-4">
+                <button type="submit" disabled="@isSubmitting" class="inline-flex items-center gap-2 rounded-lg bg-brand-500 px-6 py-3 text-sm font-medium text-white shadow-theme-xs hover:bg-brand-600 disabled:opacity-50">
+                    @if (isSubmitting)
+                    {
+                        <span class="h-4 w-4 animate-spin rounded-full border-2 border-solid border-white border-t-transparent"></span>
+                    }
+                    Buat
+                </button>
+            </div>
         </div>
-        
-        <!-- Section 3: Button -->
-        <div class="flex justify-end pt-4">
-            <button class="inline-flex items-center gap-2 rounded-lg bg-brand-500 px-6 py-3 text-sm font-medium text-white shadow-theme-xs hover:bg-brand-600">
-                Buat
-            </button>
-        </div>
-    </div>
+    </form>
 </div>
+
+@code {
+    private ProvinceCreateRequest createRequest = new() { CountryId = 1 }; // Hardcoded CountryId as per requirement since it's not visible
+    private bool isSubmitting = false;
+    private string errorMessage = string.Empty;
+
+    private async Task HandleSubmit()
+    {
+        isSubmitting = true;
+        errorMessage = string.Empty;
+        StateHasChanged();
+
+        try
+        {
+            var result = await ProvinceService.CreateAsync(createRequest);
+            if (result.Success)
+            {
+                Navigation.NavigateTo($"/provinces?success={Uri.EscapeDataString(result.Message)}", forceLoad: false);
+            }
+            else
+            {
+                errorMessage = result.Message;
+            }
+        }
+        catch (Exception)
+        {
+            errorMessage = "Terjadi kesalahan saat menyimpan data provinsi.";
+        }
+        finally
+        {
+            isSubmitting = false;
+            StateHasChanged();
+        }
+    }
+}
