@@ -59,9 +59,14 @@ namespace Perdin.WebApi.Controllers
             if (!string.IsNullOrEmpty(status))
             {
                 var allowedStatuses = new[] { "reviewed", "rejected", "approved" };
-                if (allowedStatuses.Contains(status.ToLower()))
+                var requestedStatuses = status.ToLower().Split(',')
+                    .Select(s => s.Trim())
+                    .Where(s => allowedStatuses.Contains(s))
+                    .ToList();
+                
+                if (requestedStatuses.Any())
                 {
-                    query = query.Where(r => r.Status == status.ToLower());
+                    query = query.Where(r => requestedStatuses.Contains(r.Status));
                 }
             }
 

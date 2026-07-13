@@ -11,7 +11,7 @@ namespace Perdin.WebApi.Controllers
 {
     [ApiController]
     [Route("api/cities")]
-    [Authorize(Roles = "ADMIN")]
+    [Authorize]
     public class CitiesController : ControllerBase
     {
         private readonly AppDbContext _context;
@@ -22,6 +22,7 @@ namespace Perdin.WebApi.Controllers
         }
 
         [HttpGet]
+        [AllowAnonymous] // Allow any user to fetch cities for trip creation
         public async Task<IActionResult> GetAllCities()
         {
             var cities = await _context.Cities
@@ -41,6 +42,7 @@ namespace Perdin.WebApi.Controllers
         }
 
         [HttpGet("{id}")]
+        [AllowAnonymous]
         public async Task<IActionResult> GetCity(int id)
         {
             var city = await _context.Cities
@@ -58,6 +60,7 @@ namespace Perdin.WebApi.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = "ADMIN")]
         public async Task<IActionResult> CreateCity([FromBody] CityCreateRequest request)
         {
             if (!ModelState.IsValid)
@@ -93,6 +96,7 @@ namespace Perdin.WebApi.Controllers
         }
 
         [HttpPut("{id}")]
+        [Authorize(Roles = "ADMIN")]
         public async Task<IActionResult> UpdateCity(int id, [FromBody] CityUpdateRequest request)
         {
             if (!ModelState.IsValid)
@@ -137,6 +141,7 @@ namespace Perdin.WebApi.Controllers
         }
 
         [HttpDelete("{id}")]
+        [Authorize(Roles = "ADMIN")]
         public async Task<IActionResult> DeleteCity(int id)
         {
             var city = await _context.Cities.FindAsync(id);
