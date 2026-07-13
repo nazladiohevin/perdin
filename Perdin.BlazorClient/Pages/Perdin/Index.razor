@@ -1,4 +1,7 @@
 @page "/perdin"
+@inject BusinessTripRequestService PerdinService
+@inject AuthService AuthService
+@inject NavigationManager Navigation
 <PageTitle>Pengajuan Perjalanan Dinas</PageTitle>
 
 <div class="mb-6 flex items-center justify-between">
@@ -15,8 +18,55 @@
     </a>
 </div>
 
+@if (!string.IsNullOrEmpty(successMessage))
+{
+    <div class="mb-5 rounded-xl border border-success-300 bg-success-50 p-4 dark:border-success-500/30 dark:bg-success-500/15">
+        <div class="flex items-start justify-between gap-3">
+            <div class="flex items-start gap-3">
+                <div class="-mt-0.5 text-success-500">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path fill-rule="evenodd" clip-rule="evenodd" d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2ZM10 17L5 12L6.41 10.59L10 14.17L17.59 6.58L19 8L10 17Z" fill="currentColor"/>
+                    </svg>
+                </div>
+                <div>
+                    <h4 class="mb-1 text-sm font-semibold text-gray-800 dark:text-white/90">Sukses</h4>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">@successMessage</p>
+                </div>
+            </div>
+            <button @onclick='() => successMessage = ""' class="text-success-400 hover:text-success-600 dark:text-success-400 dark:hover:text-success-300">
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M15 5L5 15M5 5L15 15" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </button>
+        </div>
+    </div>
+}
+
+@if (!string.IsNullOrEmpty(errorMessage))
+{
+    <div class="mb-5 rounded-xl border border-error-500 bg-error-50 p-4 dark:border-error-500/30 dark:bg-error-500/15">
+        <div class="flex items-start justify-between gap-3">
+            <div class="flex items-start gap-3">
+                <div class="-mt-0.5 text-error-500">
+                    <svg class="fill-current" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path fill-rule="evenodd" clip-rule="evenodd" d="M20.3499 12.0004C20.3499 16.612 16.6115 20.3504 11.9999 20.3504C7.38832 20.3504 3.6499 16.612 3.6499 12.0004C3.6499 7.38881 7.38833 3.65039 11.9999 3.65039C16.6115 3.65039 20.3499 7.38881 20.3499 12.0004ZM11.9999 22.1504C17.6056 22.1504 22.1499 17.6061 22.1499 12.0004C22.1499 6.3947 17.6056 1.85039 11.9999 1.85039C6.39421 1.85039 1.8499 6.3947 1.8499 12.0004C1.8499 17.6061 6.39421 22.1504 11.9999 22.1504ZM13.0008 16.4753C13.0008 15.923 12.5531 15.4753 12.0008 15.4753L11.9998 15.4753C11.4475 15.4753 10.9998 15.923 10.9998 16.4753C10.9998 17.0276 11.4475 17.4753 11.9998 17.4753L12.0008 17.4753C12.5531 17.4753 13.0008 17.0276 13.0008 16.4753ZM11.9998 6.62898C12.414 6.62898 12.7498 6.96476 12.7498 7.37898L12.7498 13.0555C12.7498 13.4697 12.414 13.8055 11.9998 13.8055C11.5856 13.8055 11.2498 13.4697 11.2498 13.0555L11.2498 7.37898L11.2498 6.96476 11.5856 6.62898 11.9998 6.62898Z" fill="#F04438" />
+                    </svg>
+                </div>
+                <div>
+                    <h4 class="mb-1 text-sm font-semibold text-gray-800 dark:text-white/90">Terjadi Kesalahan</h4>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">@errorMessage</p>
+                </div>
+            </div>
+            <button @onclick='() => errorMessage = ""' class="text-error-400 hover:text-error-600 dark:text-error-400 dark:hover:text-error-300">
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M15 5L5 15M5 5L15 15" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </button>
+        </div>
+    </div>
+}
+
 <div>
-    <!-- Tab Headers -->
     <div class="mb-6 flex border-b border-gray-200 dark:border-gray-800">
         <button
             @onclick='() => SetActiveTab("baru")'
@@ -32,343 +82,411 @@
         </button>
     </div>
 
-    <!-- ============================================================ -->
-    <!-- Tab Content 1: Pengajuan Baru -->
-    <!-- ============================================================ -->
-    @if (activeTab == "baru")
-    {
-        <!-- Filter Dropdown -->
-        <div class="mb-4">
-            <div class="relative inline-block">
-                <button
-                    @onclick="ToggleFilter"
-                    class="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 shadow-theme-xs hover:bg-gray-50 hover:text-gray-800 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-white/[0.03] dark:hover:text-gray-200"
-                >
-                    <svg class="stroke-current fill-white dark:fill-gray-800" width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M2.29004 5.90393H17.7067" stroke="" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
-                        <path d="M17.7075 14.0961H2.29085" stroke="" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
-                        <path d="M12.0826 3.33331C13.5024 3.33331 14.6534 4.48431 14.6534 5.90414C14.6534 7.32398 13.5024 8.47498 12.0826 8.47498C10.6627 8.47498 9.51172 7.32398 9.51172 5.90415C9.51172 4.48432 10.6627 3.33331 12.0826 3.33331Z" fill="" stroke="" stroke-width="1.5" />
-                        <path d="M7.91745 11.525C6.49762 11.525 5.34662 12.676 5.34662 14.0959C5.34661 15.5157 6.49762 16.6667 7.91745 16.6667C9.33728 16.6667 10.4883 15.5157 10.4883 14.0959C10.4883 12.676 9.33728 11.525 7.91745 11.525Z" fill="" stroke="" stroke-width="1.5" />
-                    </svg>
-                    <span>@filter</span>
-                    <svg class="stroke-current" width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M4.79175 7.396L10.0001 12.6043L15.2084 7.396" stroke="" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
-                    </svg>
-                </button>
+    <div class="mb-4">
+        <div class="relative inline-block">
+            <button
+                @onclick="ToggleFilter"
+                class="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 shadow-theme-xs hover:bg-gray-50 hover:text-gray-800 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-white/[0.03] dark:hover:text-gray-200"
+            >
+                <svg class="stroke-current fill-white dark:fill-gray-800" width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M2.29004 5.90393H17.7067" stroke="" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+                    <path d="M17.7075 14.0961H2.29085" stroke="" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+                    <path d="M12.0826 3.33331C13.5024 3.33331 14.6534 4.48431 14.6534 5.90414C14.6534 7.32398 13.5024 8.47498 12.0826 8.47498C10.6627 8.47498 9.51172 7.32398 9.51172 5.90415C9.51172 4.48432 10.6627 3.33331 12.0826 3.33331Z" fill="" stroke="" stroke-width="1.5" />
+                    <path d="M7.91745 11.525C6.49762 11.525 5.34662 12.676 5.34662 14.0959C5.34661 15.5157 6.49762 16.6667 7.91745 16.6667C9.33728 16.6667 10.4883 15.5157 10.4883 14.0959C10.4883 12.676 9.33728 11.525 7.91745 11.525Z" fill="" stroke="" stroke-width="1.5" />
+                </svg>
+                <span>Sort: @filter</span>
+                <svg class="stroke-current" width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M4.79175 7.396L10.0001 12.6043L15.2084 7.396" stroke="" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+            </button>
 
-                <!-- Dropdown Panel -->
-                @if (filterOpen)
-                {
-                    <div class="absolute left-0 z-40 mt-2 w-48 rounded-lg border border-gray-200 bg-white p-2 shadow-lg dark:border-gray-800 dark:bg-gray-900">
-                        <label @onclick='() => SetFilter("Terbaru")' class="flex cursor-pointer items-center gap-3 rounded-lg px-3 py-2 hover:bg-gray-50 dark:hover:bg-white/5">
-                            <input type="radio" name="filter-baru" value="Terbaru" checked="@(filter == "Terbaru")" class="h-4 w-4 text-brand-500" />
-                            <span class="text-sm text-gray-700 dark:text-gray-300">Terbaru</span>
-                        </label>
-                        <label @onclick='() => SetFilter("Terlama")' class="flex cursor-pointer items-center gap-3 rounded-lg px-3 py-2 hover:bg-gray-50 dark:hover:bg-white/5">
-                            <input type="radio" name="filter-baru" value="Terlama" checked="@(filter == "Terlama")" class="h-4 w-4 text-brand-500" />
-                            <span class="text-sm text-gray-700 dark:text-gray-300">Terlama</span>
-                        </label>
-                    </div>
-                    <!-- Click overlay to close dropdown -->
-                    <div class="fixed inset-0 z-30" @onclick="ToggleFilter"></div>
-                }
-            </div>
+            @if (filterOpen)
+            {
+                <div class="absolute left-0 z-40 mt-2 w-48 rounded-lg border border-gray-200 bg-white p-2 shadow-lg dark:border-gray-800 dark:bg-gray-900">
+                    <label @onclick='() => SetFilter("Terbaru")' class="flex cursor-pointer items-center gap-3 rounded-lg px-3 py-2 hover:bg-gray-50 dark:hover:bg-white/5">
+                        <input type="radio" name="filter-options" value="Terbaru" checked="@(filter == "Terbaru")" class="h-4 w-4 text-brand-500" />
+                        <span class="text-sm text-gray-700 dark:text-gray-300">Terbaru</span>
+                    </label>
+                    <label @onclick='() => SetFilter("Terlama")' class="flex cursor-pointer items-center gap-3 rounded-lg px-3 py-2 hover:bg-gray-50 dark:hover:bg-white/5">
+                        <input type="radio" name="filter-options" value="Terlama" checked="@(filter == "Terlama")" class="h-4 w-4 text-brand-500" />
+                        <span class="text-sm text-gray-700 dark:text-gray-300">Terlama</span>
+                    </label>
+                </div>
+                <!-- Click overlay to close dropdown -->
+                <div class="fixed inset-0 z-30" @onclick="ToggleFilter"></div>
+            }
         </div>
+    </div>
 
-        <!-- Tabel Pengajuan Baru -->
-        <div class="overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03]">
-            <div class="max-w-full overflow-x-auto">
-                <table class="min-w-full">
-                    <thead>
-                        <tr class="border-b border-gray-100 dark:border-gray-800">
-                            <th class="px-5 py-3 sm:px-6">
-                                <p class="text-left font-medium text-gray-500 text-theme-xs dark:text-gray-400">No</p>
-                            </th>
-                            <th class="px-5 py-3 sm:px-6">
-                                <p class="text-left font-medium text-gray-500 text-theme-xs dark:text-gray-400">Nomor Pengajuan</p>
-                            </th>
-                            <th class="px-5 py-3 sm:px-6">
-                                <p class="text-left font-medium text-gray-500 text-theme-xs dark:text-gray-400">Perjalanan</p>
-                            </th>
-                            <th class="px-5 py-3 sm:px-6">
-                                <p class="text-left font-medium text-gray-500 text-theme-xs dark:text-gray-400">Status</p>
-                            </th>
-                            <th class="px-5 py-3 sm:px-6">
-                                <p class="text-left font-medium text-gray-500 text-theme-xs dark:text-gray-400">Tanggal</p>
-                            </th>
-                            <th class="px-5 py-3 sm:px-6">
-                                <p class="text-left font-medium text-gray-500 text-theme-xs dark:text-gray-400">Aksi</p>
-                            </th>
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
-                        <!-- Row 1 -->
-                        <tr>
-                            <td class="px-5 py-4 sm:px-6">
-                                <p class="text-gray-500 text-theme-sm dark:text-gray-400">1</p>
-                            </td>
-                            <td class="px-5 py-4 sm:px-6">
-                                <p class="font-medium text-gray-800 text-theme-sm dark:text-white/90">PD-2025-001</p>
-                            </td>
-                            <td class="px-5 py-4 sm:px-6">
-                                <p class="text-gray-500 text-theme-sm dark:text-gray-400">Jakarta → Surabaya</p>
-                            </td>
-                            <td class="px-5 py-4 sm:px-6">
-                                <span class="inline-flex items-center justify-center rounded-full bg-warning-50 px-2.5 py-0.5 text-sm font-medium text-warning-600 dark:bg-warning-500/15 dark:text-orange-400">
-                                    Menunggu Persetujuan
-                                </span>
-                            </td>
-                            <td class="px-5 py-4 sm:px-6">
-                                <p class="text-gray-500 text-theme-sm dark:text-gray-400">12 Jul 2025</p>
-                            </td>
-                            <td class="px-5 py-4 sm:px-6">
-                                <div class="flex items-center gap-2">
-                                    <a href="/perdin/1" class="text-gray-500 hover:text-brand-500 dark:text-gray-400 dark:hover:text-brand-400" title="Detail">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
-                                    </a>
-                                    <a href="/perdin/1/edit" class="text-gray-500 hover:text-brand-500 dark:text-gray-400 dark:hover:text-brand-400" title="Edit">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
-                                    </a>
-                                    <a href="/perdin/1/approval" class="text-gray-500 hover:text-success-500 dark:text-gray-400 dark:hover:text-success-400" title="Approval">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"></path><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg>
-                                    </a>
-                                </div>
-                            </td>
-                        </tr>
-                        <!-- Row 2 -->
-                        <tr>
-                            <td class="px-5 py-4 sm:px-6">
-                                <p class="text-gray-500 text-theme-sm dark:text-gray-400">2</p>
-                            </td>
-                            <td class="px-5 py-4 sm:px-6">
-                                <p class="font-medium text-gray-800 text-theme-sm dark:text-white/90">PD-2025-003</p>
-                            </td>
-                            <td class="px-5 py-4 sm:px-6">
-                                <p class="text-gray-500 text-theme-sm dark:text-gray-400">Bandung → Semarang</p>
-                            </td>
-                            <td class="px-5 py-4 sm:px-6">
-                                <span class="inline-flex items-center justify-center rounded-full bg-warning-50 px-2.5 py-0.5 text-sm font-medium text-warning-600 dark:bg-warning-500/15 dark:text-orange-400">
-                                    Menunggu Persetujuan
-                                </span>
-                            </td>
-                            <td class="px-5 py-4 sm:px-6">
-                                <p class="text-gray-500 text-theme-sm dark:text-gray-400">10 Jul 2025</p>
-                            </td>
-                            <td class="px-5 py-4 sm:px-6">
-                                <div class="flex items-center gap-2">
-                                    <a href="/perdin/2" class="text-gray-500 hover:text-brand-500 dark:text-gray-400 dark:hover:text-brand-400" title="Detail">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
-                                    </a>
-                                    <a href="/perdin/2/edit" class="text-gray-500 hover:text-brand-500 dark:text-gray-400 dark:hover:text-brand-400" title="Edit">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
-                                    </a>
-                                    <a href="/perdin/2/approval" class="text-gray-500 hover:text-success-500 dark:text-gray-400 dark:hover:text-success-400" title="Approval">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"></path><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg>
-                                    </a>
-                                </div>
-                            </td>
-                        </tr>
-                        <!-- Row 3 -->
-                        <tr>
-                            <td class="px-5 py-4 sm:px-6">
-                                <p class="text-gray-500 text-theme-sm dark:text-gray-400">3</p>
-                            </td>
-                            <td class="px-5 py-4 sm:px-6">
-                                <p class="font-medium text-gray-800 text-theme-sm dark:text-white/90">PD-2025-005</p>
-                            </td>
-                            <td class="px-5 py-4 sm:px-6">
-                                <p class="text-gray-500 text-theme-sm dark:text-gray-400">Jakarta → Bali</p>
-                            </td>
-                            <td class="px-5 py-4 sm:px-6">
-                                <span class="inline-flex items-center justify-center rounded-full bg-warning-50 px-2.5 py-0.5 text-sm font-medium text-warning-600 dark:bg-warning-500/15 dark:text-orange-400">
-                                    Menunggu Persetujuan
-                                </span>
-                            </td>
-                            <td class="px-5 py-4 sm:px-6">
-                                <p class="text-gray-500 text-theme-sm dark:text-gray-400">8 Jul 2025</p>
-                            </td>
-                            <td class="px-5 py-4 sm:px-6">
-                                <div class="flex items-center gap-2">
-                                    <a href="/perdin/3" class="text-gray-500 hover:text-brand-500 dark:text-gray-400 dark:hover:text-brand-400" title="Detail">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
-                                    </a>
-                                    <a href="/perdin/3/edit" class="text-gray-500 hover:text-brand-500 dark:text-gray-400 dark:hover:text-brand-400" title="Edit">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
-                                    </a>
-                                    <a href="/perdin/3/approval" class="text-gray-500 hover:text-success-500 dark:text-gray-400 dark:hover:text-success-400" title="Approval">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"></path><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg>
-                                    </a>
-                                </div>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
+    @if (isLoadingData)
+    {
+        <div class="flex items-center justify-center p-12">
+            <span class="h-8 w-8 animate-spin rounded-full border-4 border-brand-500 border-t-transparent"></span>
+            <span class="ml-3 text-sm text-gray-500 dark:text-gray-400">Memuat data...</span>
         </div>
     }
-
-    <!-- ============================================================ -->
-    <!-- Tab Content 2: History Pengajuan -->
-    <!-- ============================================================ -->
-    @if (activeTab == "history")
+    else
     {
-        <!-- Filter Dropdown -->
-        <div class="mb-4">
-            <div class="relative inline-block">
-                <button
-                    @onclick="ToggleFilter"
-                    class="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 shadow-theme-xs hover:bg-gray-50 hover:text-gray-800 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-white/[0.03] dark:hover:text-gray-200"
-                >
-                    <svg class="stroke-current fill-white dark:fill-gray-800" width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M2.29004 5.90393H17.7067" stroke="" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
-                        <path d="M17.7075 14.0961H2.29085" stroke="" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
-                        <path d="M12.0826 3.33331C13.5024 3.33331 14.6534 4.48431 14.6534 5.90414C14.6534 7.32398 13.5024 8.47498 12.0826 8.47498C10.6627 8.47498 9.51172 7.32398 9.51172 5.90415C9.51172 4.48432 10.6627 3.33331 12.0826 3.33331Z" fill="" stroke="" stroke-width="1.5" />
-                        <path d="M7.91745 11.525C6.49762 11.525 5.34662 12.676 5.34662 14.0959C5.34661 15.5157 6.49762 16.6667 7.91745 16.6667C9.33728 16.6667 10.4883 15.5157 10.4883 14.0959C10.4883 12.676 9.33728 11.525 7.91745 11.525Z" fill="" stroke="" stroke-width="1.5" />
-                    </svg>
-                    <span>@filter</span>
-                    <svg class="stroke-current" width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M4.79175 7.396L10.0001 12.6043L15.2084 7.396" stroke="" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
-                    </svg>
-                </button>
-
-                <!-- Dropdown Panel -->
-                @if (filterOpen)
-                {
-                    <div class="absolute left-0 z-40 mt-2 w-48 rounded-lg border border-gray-200 bg-white p-2 shadow-lg dark:border-gray-800 dark:bg-gray-900">
-                        <label @onclick='() => SetFilter("Terbaru")' class="flex cursor-pointer items-center gap-3 rounded-lg px-3 py-2 hover:bg-gray-50 dark:hover:bg-white/5">
-                            <input type="radio" name="filter-history" value="Terbaru" checked="@(filter == "Terbaru")" class="h-4 w-4 text-brand-500" />
-                            <span class="text-sm text-gray-700 dark:text-gray-300">Terbaru</span>
-                        </label>
-                        <label @onclick='() => SetFilter("Terlama")' class="flex cursor-pointer items-center gap-3 rounded-lg px-3 py-2 hover:bg-gray-50 dark:hover:bg-white/5">
-                            <input type="radio" name="filter-history" value="Terlama" checked="@(filter == "Terlama")" class="h-4 w-4 text-brand-500" />
-                            <span class="text-sm text-gray-700 dark:text-gray-300">Terlama</span>
-                        </label>
-                    </div>
-                    <!-- Click overlay to close dropdown -->
-                    <div class="fixed inset-0 z-30" @onclick="ToggleFilter"></div>
-                }
+        @if (activeTab == "baru")
+        {
+            <div class="overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03]">
+                <div class="max-w-full overflow-x-auto">
+                    <table class="min-w-full">
+                        <thead>
+                            <tr class="border-b border-gray-100 dark:border-gray-800">
+                                <th class="px-5 py-3 sm:px-6">
+                                    <p class="text-left font-medium text-gray-500 text-theme-xs dark:text-gray-400">No</p>
+                                </th>
+                                <th class="px-5 py-3 sm:px-6">
+                                    <p class="text-left font-medium text-gray-500 text-theme-xs dark:text-gray-400">Nomor Pengajuan</p>
+                                </th>
+                                @if (isAdminOrSdm)
+                                {
+                                    <th class="px-5 py-3 sm:px-6">
+                                        <p class="text-left font-medium text-gray-500 text-theme-xs dark:text-gray-400">Nama</p>
+                                    </th>
+                                }
+                                <th class="px-5 py-3 sm:px-6">
+                                    <p class="text-left font-medium text-gray-500 text-theme-xs dark:text-gray-400">Perjalanan</p>
+                                </th>
+                                <th class="px-5 py-3 sm:px-6">
+                                    <p class="text-left font-medium text-gray-500 text-theme-xs dark:text-gray-400">Status</p>
+                                </th>
+                                <th class="px-5 py-3 sm:px-6">
+                                    <p class="text-left font-medium text-gray-500 text-theme-xs dark:text-gray-400">Tanggal</p>
+                                </th>
+                                <th class="px-5 py-3 sm:px-6">
+                                    <p class="text-left font-medium text-gray-500 text-theme-xs dark:text-gray-400">Dibuat Pada</p>
+                                </th>
+                                <th class="px-5 py-3 sm:px-6">
+                                    <p class="text-left font-medium text-gray-500 text-theme-xs dark:text-gray-400">Aksi</p>
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
+                            @if (!pengajuanBaru.Any())
+                            {
+                                <tr>
+                                    <td colspan="@(isAdminOrSdm ? 8 : 7)" class="px-5 py-8 text-center text-gray-500 dark:text-gray-400">
+                                        Tidak ada pengajuan baru.
+                                    </td>
+                                </tr>
+                            }
+                            else
+                            {
+                                int idx = 1;
+                                @foreach (var item in pengajuanBaru)
+                                {
+                                    var currentItem = item;
+                                    var no = idx++;
+                                    <tr>
+                                        <td class="px-5 py-4 sm:px-6">
+                                            <p class="text-gray-500 text-theme-sm dark:text-gray-400">@no</p>
+                                        </td>
+                                        <td class="px-5 py-4 sm:px-6">
+                                            <p class="font-medium text-gray-800 text-theme-sm dark:text-white/90">@item.RequestNumber</p>
+                                        </td>
+                                        @if (isAdminOrSdm)
+                                        {
+                                            <td class="px-5 py-4 sm:px-6">
+                                                <p class="text-gray-500 text-theme-sm dark:text-gray-400">@item.UserName</p>
+                                            </td>
+                                        }
+                                        <td class="px-5 py-4 sm:px-6">
+                                            <p class="text-gray-500 text-theme-sm dark:text-gray-400">
+                                                @item.OriginCity → @(item.IsForeign ? item.DestinationCountry : item.DestinationCity)
+                                            </p>
+                                        </td>
+                                        <td class="px-5 py-4 sm:px-6">
+                                            <span class="inline-flex items-center justify-center rounded-full bg-warning-50 px-2.5 py-0.5 text-sm font-medium text-warning-600 dark:bg-warning-500/15 dark:text-orange-400">
+                                                Menunggu Persetujuan
+                                            </span>
+                                        </td>
+                                        <td class="px-5 py-4 sm:px-6">
+                                            <div class="flex items-center gap-1.5">
+                                                <p class="text-gray-500 text-theme-sm dark:text-gray-400">
+                                                    @FormatTanggalRange(item.DepartureDate, item.ReturnDate)
+                                                </p>
+                                                <span class="text-xs text-gray-400 dark:text-gray-500 font-semibold">
+                                                    (@HitungDurasi(item.DepartureDate, item.ReturnDate) Hari)
+                                                </span>
+                                            </div>
+                                        </td>
+                                        <td class="px-5 py-4 sm:px-6">
+                                            <p class="text-gray-500 text-theme-sm dark:text-gray-400">@FormatCreatedAt(item.CreatedAt)</p>
+                                        </td>
+                                        <td class="px-5 py-4 sm:px-6">
+                                            <div class="flex items-center gap-2.5">
+                                                <a href="/perdin/@item.Id" class="text-gray-500 hover:text-brand-500 dark:text-gray-400 dark:hover:text-brand-400" title="Detail">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                                                </a>
+                                                <a href="/perdin/@item.Id/edit" class="text-gray-500 hover:text-brand-500 dark:text-gray-400 dark:hover:text-brand-400" title="Edit">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                                                </a>
+                                                <button @onclick="() => PromptDelete(currentItem.Id, currentItem.RequestNumber)" class="text-gray-500 hover:text-error-500 dark:text-gray-400 dark:hover:text-error-400" title="Hapus">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                                                </button>
+                                                @if (isAdminOrSdm)
+                                                {
+                                                    <a href="/perdin/@item.Id/approval" class="text-gray-500 hover:text-success-500 dark:text-gray-400 dark:hover:text-success-400" title="Approval">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"></path><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg>
+                                                    </a>
+                                                }
+                                            </div>
+                                        </td>
+                                    </tr>
+                                }
+                            }
+                        </tbody>
+                    </table>
+                </div>
             </div>
-        </div>
+        }
 
-        <!-- Tabel History -->
-        <div class="overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03]">
-            <div class="max-w-full overflow-x-auto">
-                <table class="min-w-full">
-                    <thead>
-                        <tr class="border-b border-gray-100 dark:border-gray-800">
-                            <th class="px-5 py-3 sm:px-6">
-                                <p class="text-left font-medium text-gray-500 text-theme-xs dark:text-gray-400">No</p>
-                            </th>
-                            <th class="px-5 py-3 sm:px-6">
-                                <p class="text-left font-medium text-gray-500 text-theme-xs dark:text-gray-400">Nomor Pengajuan</p>
-                            </th>
-                            <th class="px-5 py-3 sm:px-6">
-                                <p class="text-left font-medium text-gray-500 text-theme-xs dark:text-gray-400">Perjalanan</p>
-                            </th>
-                            <th class="px-5 py-3 sm:px-6">
-                                <p class="text-left font-medium text-gray-500 text-theme-xs dark:text-gray-400">Status</p>
-                            </th>
-                            <th class="px-5 py-3 sm:px-6">
-                                <p class="text-left font-medium text-gray-500 text-theme-xs dark:text-gray-400">Tanggal</p>
-                            </th>
-                            <th class="px-5 py-3 sm:px-6">
-                                <p class="text-left font-medium text-gray-500 text-theme-xs dark:text-gray-400">Aksi</p>
-                            </th>
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
-                        <!-- Row 1 - Disetujui -->
-                        <tr>
-                            <td class="px-5 py-4 sm:px-6">
-                                <p class="text-gray-500 text-theme-sm dark:text-gray-400">1</p>
-                            </td>
-                            <td class="px-5 py-4 sm:px-6">
-                                <p class="font-medium text-gray-800 text-theme-sm dark:text-white/90">PD-2025-002</p>
-                            </td>
-                            <td class="px-5 py-4 sm:px-6">
-                                <p class="text-gray-500 text-theme-sm dark:text-gray-400">Surabaya → Malang</p>
-                            </td>
-                            <td class="px-5 py-4 sm:px-6">
-                                <span class="inline-flex items-center justify-center rounded-full bg-success-50 px-2.5 py-0.5 text-sm font-medium text-success-600 dark:bg-success-500/15 dark:text-success-500">
-                                    Disetujui
-                                </span>
-                            </td>
-                            <td class="px-5 py-4 sm:px-6">
-                                <p class="text-gray-500 text-theme-sm dark:text-gray-400">5 Jul 2025</p>
-                            </td>
-                            <td class="px-5 py-4 sm:px-6">
-                                <div class="flex items-center gap-2">
-                                    <a href="/perdin/4" class="text-gray-500 hover:text-brand-500 dark:text-gray-400 dark:hover:text-brand-400" title="Detail">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
-                                    </a>
-                                </div>
-                            </td>
-                        </tr>
-                        <!-- Row 2 - Ditolak -->
-                        <tr>
-                            <td class="px-5 py-4 sm:px-6">
-                                <p class="text-gray-500 text-theme-sm dark:text-gray-400">2</p>
-                            </td>
-                            <td class="px-5 py-4 sm:px-6">
-                                <p class="font-medium text-gray-800 text-theme-sm dark:text-white/90">PD-2025-004</p>
-                            </td>
-                            <td class="px-5 py-4 sm:px-6">
-                                <p class="text-gray-500 text-theme-sm dark:text-gray-400">Jakarta → Medan</p>
-                            </td>
-                            <td class="px-5 py-4 sm:px-6">
-                                <span class="inline-flex items-center justify-center rounded-full bg-error-50 px-2.5 py-0.5 text-sm font-medium text-error-600 dark:bg-error-500/15 dark:text-error-500">
-                                    Ditolak
-                                </span>
-                            </td>
-                            <td class="px-5 py-4 sm:px-6">
-                                <p class="text-gray-500 text-theme-sm dark:text-gray-400">1 Jul 2025</p>
-                            </td>
-                            <td class="px-5 py-4 sm:px-6">
-                                <div class="flex items-center gap-2">
-                                    <a href="/perdin/5" class="text-gray-500 hover:text-brand-500 dark:text-gray-400 dark:hover:text-brand-400" title="Detail">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
-                                    </a>
-                                </div>
-                            </td>
-                        </tr>
-                        <!-- Row 3 - Disetujui -->
-                        <tr>
-                            <td class="px-5 py-4 sm:px-6">
-                                <p class="text-gray-500 text-theme-sm dark:text-gray-400">3</p>
-                            </td>
-                            <td class="px-5 py-4 sm:px-6">
-                                <p class="font-medium text-gray-800 text-theme-sm dark:text-white/90">PD-2025-006</p>
-                            </td>
-                            <td class="px-5 py-4 sm:px-6">
-                                <p class="text-gray-500 text-theme-sm dark:text-gray-400">Yogyakarta → Jakarta</p>
-                            </td>
-                            <td class="px-5 py-4 sm:px-6">
-                                <span class="inline-flex items-center justify-center rounded-full bg-success-50 px-2.5 py-0.5 text-sm font-medium text-success-600 dark:bg-success-500/15 dark:text-success-500">
-                                    Disetujui
-                                </span>
-                            </td>
-                            <td class="px-5 py-4 sm:px-6">
-                                <p class="text-gray-500 text-theme-sm dark:text-gray-400">28 Jun 2025</p>
-                            </td>
-                            <td class="px-5 py-4 sm:px-6">
-                                <div class="flex items-center gap-2">
-                                    <a href="/perdin/6" class="text-gray-500 hover:text-brand-500 dark:text-gray-400 dark:hover:text-brand-400" title="Detail">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
-                                    </a>
-                                </div>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
+        @if (activeTab == "history")
+        {
+            <div class="overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03]">
+                <div class="max-w-full overflow-x-auto">
+                    <table class="min-w-full">
+                        <thead>
+                            <tr class="border-b border-gray-100 dark:border-gray-800">
+                                <th class="px-5 py-3 sm:px-6">
+                                    <p class="text-left font-medium text-gray-500 text-theme-xs dark:text-gray-400">No</p>
+                                </th>
+                                <th class="px-5 py-3 sm:px-6">
+                                    <p class="text-left font-medium text-gray-500 text-theme-xs dark:text-gray-400">Nomor Pengajuan</p>
+                                </th>
+                                @if (isAdminOrSdm)
+                                {
+                                    <th class="px-5 py-3 sm:px-6">
+                                        <p class="text-left font-medium text-gray-500 text-theme-xs dark:text-gray-400">Nama</p>
+                                    </th>
+                                }
+                                <th class="px-5 py-3 sm:px-6">
+                                    <p class="text-left font-medium text-gray-500 text-theme-xs dark:text-gray-400">Perjalanan</p>
+                                </th>
+                                <th class="px-5 py-3 sm:px-6">
+                                    <p class="text-left font-medium text-gray-500 text-theme-xs dark:text-gray-400">Status</p>
+                                </th>
+                                <th class="px-5 py-3 sm:px-6">
+                                    <p class="text-left font-medium text-gray-500 text-theme-xs dark:text-gray-400">Tanggal</p>
+                                </th>
+                                <th class="px-5 py-3 sm:px-6">
+                                    <p class="text-left font-medium text-gray-500 text-theme-xs dark:text-gray-400">Dibuat Pada</p>
+                                </th>
+                                <th class="px-5 py-3 sm:px-6">
+                                    <p class="text-left font-medium text-gray-500 text-theme-xs dark:text-gray-400">Aksi</p>
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
+                            @if (!historyPengajuan.Any())
+                            {
+                                <tr>
+                                    <td colspan="@(isAdminOrSdm ? 8 : 7)" class="px-5 py-8 text-center text-gray-500 dark:text-gray-400">
+                                        Tidak ada history pengajuan.
+                                    </td>
+                                </tr>
+                            }
+                            else
+                            {
+                                int idx = 1;
+                                @foreach (var item in historyPengajuan)
+                                {
+                                    var currentItem = item;
+                                    var no = idx++;
+                                    <tr>
+                                        <td class="px-5 py-4 sm:px-6">
+                                            <p class="text-gray-500 text-theme-sm dark:text-gray-400">@no</p>
+                                        </td>
+                                        <td class="px-5 py-4 sm:px-6">
+                                            <p class="font-medium text-gray-800 text-theme-sm dark:text-white/90">@item.RequestNumber</p>
+                                        </td>
+                                        @if (isAdminOrSdm)
+                                        {
+                                            <td class="px-5 py-4 sm:px-6">
+                                                <p class="text-gray-500 text-theme-sm dark:text-gray-400">@item.UserName</p>
+                                            </td>
+                                        }
+                                        <td class="px-5 py-4 sm:px-6">
+                                            <p class="text-gray-500 text-theme-sm dark:text-gray-400">
+                                                @item.OriginCity → @(item.IsForeign ? item.DestinationCountry : item.DestinationCity)
+                                            </p>
+                                        </td>
+                                        <td class="px-5 py-4 sm:px-6">
+                                            @if (item.Status.Equals("approved", StringComparison.OrdinalIgnoreCase))
+                                            {
+                                                <span class="inline-flex items-center justify-center rounded-full bg-success-50 px-2.5 py-0.5 text-sm font-medium text-success-600 dark:bg-success-500/15 dark:text-success-500">
+                                                    Disetujui
+                                                </span>
+                                            }
+                                            else
+                                            {
+                                                <span class="inline-flex items-center justify-center rounded-full bg-error-50 px-2.5 py-0.5 text-sm font-medium text-error-600 dark:bg-error-500/15 dark:text-error-500">
+                                                    Ditolak
+                                                </span>
+                                            }
+                                        </td>
+                                        <td class="px-5 py-4 sm:px-6">
+                                            <div class="flex items-center gap-1.5">
+                                                <p class="text-gray-500 text-theme-sm dark:text-gray-400">
+                                                    @FormatTanggalRange(item.DepartureDate, item.ReturnDate)
+                                                </p>
+                                                <span class="text-xs text-gray-400 dark:text-gray-500 font-semibold">
+                                                    (@HitungDurasi(item.DepartureDate, item.ReturnDate) Hari)
+                                                </span>
+                                            </div>
+                                        </td>
+                                        <td class="px-5 py-4 sm:px-6">
+                                            <p class="text-gray-500 text-theme-sm dark:text-gray-400">@FormatCreatedAt(item.CreatedAt)</p>
+                                        </td>
+                                        <td class="px-5 py-4 sm:px-6">
+                                            <div class="flex items-center gap-2.5">
+                                                <a href="/perdin/@item.Id" class="text-gray-500 hover:text-brand-500 dark:text-gray-400 dark:hover:text-brand-400" title="Detail">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                                                </a>
+                                                <a href="/perdin/@item.Id/edit" class="text-gray-500 hover:text-brand-500 dark:text-gray-400 dark:hover:text-brand-400" title="Edit">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                                                </a>
+                                                <button @onclick="() => PromptDelete(currentItem.Id, currentItem.RequestNumber)" class="text-gray-500 hover:text-error-500 dark:text-gray-400 dark:hover:text-error-400" title="Hapus">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                }
+                            }
+                        </tbody>
+                    </table>
+                </div>
             </div>
-        </div>
+        }
     }
 </div>
 
+@if (showDeleteModal)
+{
+    <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-900/60 dark:bg-gray-950/70 backdrop-blur-xs">
+        <div class="relative w-full max-w-md rounded-2xl bg-white p-6 shadow-theme-xl dark:bg-gray-900 border border-gray-100 dark:border-gray-800">
+            <h3 class="mb-2 text-lg font-semibold text-gray-800 dark:text-white/90">
+                Konfirmasi Hapus
+            </h3>
+            <p class="mb-6 text-sm text-gray-500 dark:text-gray-400">
+                Apakah Anda yakin ingin menghapus pengajuan perjalanan dinas dengan nomor pengajuan <strong>@deleteRequestNumber</strong>?
+            </p>
+            <div class="flex justify-end gap-3">
+                <button 
+                    @onclick="CancelDelete"
+                    class="rounded-lg border border-gray-300 bg-white px-4.5 py-2.5 text-sm font-medium text-gray-700 shadow-theme-xs hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-white/[0.03]"
+                >
+                    Batal
+                </button>
+                <button 
+                    @onclick="ConfirmDelete"
+                    disabled="@isDeleting"
+                    class="inline-flex items-center gap-2 rounded-lg bg-error-500 px-4.5 py-2.5 text-sm font-medium text-white shadow-theme-xs hover:bg-error-600 disabled:opacity-50"
+                >
+                    @if (isDeleting)
+                    {
+                        <span class="h-4 w-4 animate-spin rounded-full border-2 border-solid border-white border-t-transparent"></span>
+                    }
+                    Hapus
+                </button>
+            </div>
+        </div>
+    </div>
+}
+
 @code {
+    [Parameter]
+    [SupplyParameterFromQuery(Name = "success")]
+    public string? Success { get; set; }
+
     private string activeTab = "baru";
     private bool filterOpen = false;
     private string filter = "Terbaru";
+
+    private bool isAdminOrSdm = false;
+    private bool isLoadingData = true;
+
+    private List<BusinessTripRequestListItem> pengajuanBaru = new();
+    private List<BusinessTripRequestListItem> historyPengajuan = new();
+
+    private string successMessage = "";
+    private string errorMessage = "";
+
+    // Delete Modal State
+    private bool showDeleteModal = false;
+    private int deleteTargetId;
+    private string deleteRequestNumber = "";
+    private bool isDeleting = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Cek role user
+        var userInfo = await AuthService.GetUserInfoAsync();
+        if (userInfo != null)
+        {
+            isAdminOrSdm = userInfo.Roles.Contains("ADMIN") || userInfo.Roles.Contains("SDM");
+        }
+
+        await LoadData();
+    }
+
+    protected override void OnParametersSet()
+    {
+        if (!string.IsNullOrEmpty(Success))
+        {
+            successMessage = Success;
+            _ = AutoDismissSuccessAlert();
+        }
+    }
+
+    private async Task LoadData()
+    {
+        isLoadingData = true;
+        errorMessage = "";
+        StateHasChanged();
+
+        try
+        {
+            string sortByParam = filter == "Terlama" ? "oldest" : "newest";
+
+            // Load Pengajuan Baru (status=reviewed)
+            var resultBaru = await PerdinService.GetListAsync("reviewed", sortByParam);
+            if (resultBaru.Success && resultBaru.Data != null)
+            {
+                pengajuanBaru = resultBaru.Data;
+            }
+            else if (!resultBaru.Success)
+            {
+                errorMessage = resultBaru.Message;
+                _ = AutoDismissErrorAlert();
+            }
+
+            // Load History (status=approved,rejected)
+            var resultHistory = await PerdinService.GetListAsync("approved,rejected", sortByParam);
+            if (resultHistory.Success && resultHistory.Data != null)
+            {
+                historyPengajuan = resultHistory.Data;
+            }
+            else if (!resultHistory.Success && string.IsNullOrEmpty(errorMessage))
+            {
+                errorMessage = resultHistory.Message;
+                _ = AutoDismissErrorAlert();
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = "Gagal memuat data dari server. Silakan coba lagi.";
+            _ = AutoDismissErrorAlert();
+        }
+        finally
+        {
+            isLoadingData = false;
+            StateHasChanged();
+        }
+    }
 
     private void SetActiveTab(string tab)
     {
@@ -380,9 +498,98 @@
         filterOpen = !filterOpen;
     }
 
-    private void SetFilter(string option)
+    private async Task SetFilter(string option)
     {
         filter = option;
         filterOpen = false;
+        await LoadData();
+    }
+
+    private void PromptDelete(int id, string reqNumber)
+    {
+        deleteTargetId = id;
+        deleteRequestNumber = reqNumber;
+        showDeleteModal = true;
+    }
+
+    private void CancelDelete()
+    {
+        showDeleteModal = false;
+        deleteRequestNumber = "";
+        deleteTargetId = 0;
+    }
+
+    private async Task ConfirmDelete()
+    {
+        isDeleting = true;
+        errorMessage = "";
+        StateHasChanged();
+
+        try
+        {
+            var result = await PerdinService.DeleteAsync(deleteTargetId);
+            if (result.Success)
+            {
+                successMessage = result.Message;
+                showDeleteModal = false;
+                _ = AutoDismissSuccessAlert();
+                await LoadData();
+            }
+            else
+            {
+                errorMessage = result.Message;
+                showDeleteModal = false;
+                _ = AutoDismissErrorAlert();
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = "Terjadi kesalahan saat menghubungi server untuk menghapus data.";
+            showDeleteModal = false;
+            _ = AutoDismissErrorAlert();
+        }
+        finally
+        {
+            isDeleting = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task AutoDismissSuccessAlert()
+    {
+        await Task.Delay(5000);
+        successMessage = "";
+        StateHasChanged();
+    }
+
+    private async Task AutoDismissErrorAlert()
+    {
+        await Task.Delay(5000);
+        errorMessage = "";
+        StateHasChanged();
+    }
+
+    private string FormatTanggalRange(DateOnly departure, DateOnly returnDate)
+    {
+        var bulan = new[] { "", "Januari", "Februari", "Maret", "April", "Mei", "Juni",
+                           "Juli", "Agustus", "September", "Oktober", "November", "Desember" };
+
+        string departureStr = $"{departure.Day} {bulan[departure.Month]} {departure.Year}";
+        string returnStr = $"{returnDate.Day} {bulan[returnDate.Month]} {returnDate.Year}";
+
+        return $"{departureStr} - {returnStr}";
+    }
+
+    private int HitungDurasi(DateOnly departure, DateOnly returnDate)
+    {
+        var diff = returnDate.DayNumber - departure.DayNumber;
+        return diff > 0 ? diff : 0;
+    }
+
+    private string FormatCreatedAt(DateTime dt)
+    {
+        var bulan = new[] { "Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agt", "Sep", "Okt", "Nov", "Des" };
+        var localTime = dt.ToLocalTime();
+        return $"{localTime.Day:D2} {bulan[localTime.Month - 1]} {localTime.Year}";
     }
 }

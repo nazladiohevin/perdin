@@ -1,15 +1,12 @@
 @page "/perdin/{Id}/approval"
 @attribute [Authorize(Roles = "ADMIN,SDM")]
+@inject BusinessTripRequestService PerdinService
+@inject AuthService AuthService
+@inject NavigationManager Navigation
 <PageTitle>Approval Pengajuan Perjalanan Dinas</PageTitle>
 
-@code {
-    [Parameter] public string Id { get; set; }
-}
-
-<div x-data="{ isLuarNegeri: false }">
-
-    <!-- Section 1: Header -->
-    <div class="mb-6 flex items-center justify-between">
+<div>
+    <section class="mb-6 flex items-center justify-between">
         <h2 class="text-lg font-semibold text-gray-800 dark:text-white/90">
             Approval Pengajuan Perjalanan Dinas
         </h2>
@@ -21,144 +18,324 @@
             </svg>
             Kembali
         </a>
-    </div>
+    </section>
 
-    <!-- Section 2: Form (Readonly) -->
-    <div class="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03]">
-        <div class="space-y-6 p-5 sm:p-6">
-
-            <!-- Tanggal Berangkat & Pulang (2 kolom) -->
-            <div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
-                <div>
-                    <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
-                        Tanggal Keberangkatan
-                    </label>
-                    <input
-                        type="date"
-                        value="2025-07-15"
-                        readonly
-                        disabled
-                        class="dark:bg-dark-900 shadow-theme-xs h-11 w-full appearance-none rounded-lg border border-gray-300 bg-transparent bg-none px-4 py-2.5 text-sm text-gray-800 focus:outline-hidden disabled:border-gray-100 disabled:bg-gray-50 disabled:text-gray-500 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:disabled:border-gray-800 dark:disabled:bg-white/[0.03] dark:disabled:text-gray-500"
-                    />
-                </div>
-                <div>
-                    <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
-                        Tanggal Kepulangan
-                    </label>
-                    <input
-                        type="date"
-                        value="2025-07-18"
-                        readonly
-                        disabled
-                        class="dark:bg-dark-900 shadow-theme-xs h-11 w-full appearance-none rounded-lg border border-gray-300 bg-transparent bg-none px-4 py-2.5 text-sm text-gray-800 focus:outline-hidden disabled:border-gray-100 disabled:bg-gray-50 disabled:text-gray-500 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:disabled:border-gray-800 dark:disabled:bg-white/[0.03] dark:disabled:text-gray-500"
-                    />
-                </div>
-            </div>
-
-            <!-- Perjalanan info -->
-            <div>
-                <p class="mb-3 text-sm font-medium text-gray-800 dark:text-white/90">Perjalanan</p>
-                <div class="flex items-center text-sm font-medium text-gray-500 dark:text-gray-400">
-                    <div class="mr-3 flex h-5 w-5 items-center justify-center rounded-md border-[1.25px] bg-transparent border-gray-300 dark:border-gray-700 opacity-50">
-                        <span class="opacity-0">
-                            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                <path d="M11.6666 3.5L5.24992 9.91667L2.33325 7" stroke="white" stroke-width="1.94437" stroke-linecap="round" stroke-linejoin="round" />
-                            </svg>
-                        </span>
+    @if (!string.IsNullOrEmpty(errorMessage))
+    {
+        <div class="mb-5 rounded-xl border border-error-500 bg-error-50 p-4 dark:border-error-500/30 dark:bg-error-500/15">
+            <div class="flex items-start justify-between gap-3">
+                <div class="flex items-start gap-3">
+                    <div class="-mt-0.5 text-error-500">
+                        <svg class="fill-current" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path fill-rule="evenodd" clip-rule="evenodd" d="M20.3499 12.0004C20.3499 16.612 16.6115 20.3504 11.9999 20.3504C7.38832 20.3504 3.6499 16.612 3.6499 12.0004C3.6499 7.38881 7.38833 3.65039 11.9999 3.65039C16.6115 3.65039 20.3499 7.38881 20.3499 12.0004ZM11.9999 22.1504C17.6056 22.1504 22.1499 17.6061 22.1499 12.0004C22.1499 6.3947 17.6056 1.85039 11.9999 1.85039C6.39421 1.85039 1.8499 6.3947 1.8499 12.0004C1.8499 17.6061 6.39421 22.1504 11.9999 22.1504ZM13.0008 16.4753C13.0008 15.923 12.5531 15.4753 12.0008 15.4753L11.9998 15.4753C11.4475 15.4753 10.9998 15.923 10.9998 16.4753C10.9998 17.0276 11.4475 17.4753 11.9998 17.4753L12.0008 17.4753C12.5531 17.4753 13.0008 17.0276 13.0008 16.4753ZM11.9998 6.62898C12.414 6.62898 12.7498 6.96476 12.7498 7.37898L12.7498 13.0555C12.7498 13.4697 12.414 13.8055 11.9998 13.8055C11.5856 13.8055 11.2498 13.4697 11.2498 13.0555L11.2498 7.37898L11.2498 6.96476 11.5856 6.62898 11.9998 6.62898Z" fill="#F04438" />
+                        </svg>
                     </div>
-                    Perjalanan Luar Negeri
+                    <div>
+                        <h4 class="mb-1 text-sm font-semibold text-gray-800 dark:text-white/90">Terjadi Kesalahan</h4>
+                        <p class="text-sm text-gray-500 dark:text-gray-400">@errorMessage</p>
+                    </div>
+                </div>
+                <button @onclick='() => errorMessage = ""' class="text-error-400 hover:text-error-600 dark:text-error-400 dark:hover:text-error-300">
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M15 5L5 15M5 5L15 15" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    }
+
+    @if (isLoadingData)
+    {
+        <div class="flex items-center justify-center p-12 bg-white dark:bg-white/[0.03] rounded-2xl border border-gray-200 dark:border-gray-800">
+            <span class="h-8 w-8 animate-spin rounded-full border-4 border-brand-500 border-t-transparent"></span>
+            <span class="ml-3 text-sm text-gray-500 dark:text-gray-400">Memuat data pengajuan...</span>
+        </div>
+    }
+    else if (data != null)
+    {
+        <section class="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03]">
+            <div class="space-y-6 p-5 sm:p-6">
+                <!-- Nomor Pengajuan -->
+                <div>
+                    <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
+                        Nomor Pengajuan
+                    </label>
+                    <input
+                        type="text"
+                        value="@data.RequestNumber"
+                        readonly
+                        disabled
+                        class="dark:bg-dark-900 shadow-theme-xs h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 focus:outline-hidden disabled:border-gray-100 disabled:bg-gray-50 disabled:text-gray-500 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:disabled:border-gray-800 dark:disabled:bg-white/[0.03] dark:disabled:text-gray-500"
+                    />
+                </div>
+
+                <!-- Nama Pengguna -->
+                <div>
+                    <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
+                        Nama Pengguna
+                    </label>
+                    <input
+                        type="text"
+                        value="@data.User.Name"
+                        readonly
+                        disabled
+                        class="dark:bg-dark-900 shadow-theme-xs h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 focus:outline-hidden disabled:border-gray-100 disabled:bg-gray-50 disabled:text-gray-500 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:disabled:border-gray-800 dark:disabled:bg-white/[0.03] dark:disabled:text-gray-500"
+                    />
+                </div>
+
+                <!-- Tanggal Berangkat & Pulang (2 kolom) -->
+                <div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
+                    <div>
+                        <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
+                            Tanggal Keberangkatan
+                        </label>
+                        <input
+                            type="text"
+                            value="@FormatTanggalIndo(data.DepartureDate)"
+                            readonly
+                            disabled
+                            class="dark:bg-dark-900 shadow-theme-xs h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 focus:outline-hidden disabled:border-gray-100 disabled:bg-gray-50 disabled:text-gray-500 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:disabled:border-gray-800 dark:disabled:bg-white/[0.03] dark:disabled:text-gray-500"
+                        />
+                    </div>
+                    <div>
+                        <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
+                            Tanggal Kepulangan
+                        </label>
+                        <input
+                            type="text"
+                            value="@FormatTanggalIndo(data.ReturnDate)"
+                            readonly
+                            disabled
+                            class="dark:bg-dark-900 shadow-theme-xs h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 focus:outline-hidden disabled:border-gray-100 disabled:bg-gray-50 disabled:text-gray-500 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:disabled:border-gray-800 dark:disabled:bg-white/[0.03] dark:disabled:text-gray-500"
+                        />
+                    </div>
+                </div>
+
+                <!-- Perjalanan info -->
+                <div>
+                    <p class="mb-3 text-sm font-medium text-gray-800 dark:text-white/90">Perjalanan</p>
+                    <div class="flex items-center text-sm font-medium text-gray-500 dark:text-gray-400 select-none">
+                        <div class="mr-3 flex h-5 w-5 items-center justify-center rounded-md border-[1.25px] @(isLuarNegeri ? "border-brand-500 bg-brand-500 text-white" : "border-gray-300 bg-transparent")">
+                            @if (isLuarNegeri)
+                            {
+                                <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M11.6666 3.5L5.24992 9.91667L2.33325 7" stroke="currentColor" stroke-width="1.94437" stroke-linecap="round" stroke-linejoin="round" />
+                                </svg>
+                            }
+                        </div>
+                        Perjalanan Luar Negeri
+                    </div>
+                </div>
+
+                <!-- Kota Asal -->
+                <div>
+                    <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
+                        Kota Asal
+                    </label>
+                    <input
+                        type="text"
+                        value="@data.OriginCityName"
+                        readonly
+                        disabled
+                        class="dark:bg-dark-900 shadow-theme-xs h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 focus:outline-hidden disabled:border-gray-100 disabled:bg-gray-50 disabled:text-gray-500 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:disabled:border-gray-800 dark:disabled:bg-white/[0.03] dark:disabled:text-gray-500"
+                    />
+                </div>
+
+                <!-- Kota Tujuan atau Negara Tujuan -->
+                @if (!isLuarNegeri)
+                {
+                    <div>
+                        <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
+                            Kota Tujuan
+                        </label>
+                        <input
+                            type="text"
+                            value="@data.DestinationCityName"
+                            readonly
+                            disabled
+                            class="dark:bg-dark-900 shadow-theme-xs h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 focus:outline-hidden disabled:border-gray-100 disabled:bg-gray-50 disabled:text-gray-500 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:disabled:border-gray-800 dark:disabled:bg-white/[0.03] dark:disabled:text-gray-500"
+                        />
+                    </div>
+                }
+                else
+                {
+                    <div>
+                        <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
+                            Negara Tujuan
+                        </label>
+                        <input
+                            type="text"
+                            value="@data.DestinationCountryName"
+                            readonly
+                            disabled
+                            class="dark:bg-dark-900 shadow-theme-xs h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 focus:outline-hidden disabled:border-gray-100 disabled:bg-gray-50 disabled:text-gray-500 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:disabled:border-gray-800 dark:disabled:bg-white/[0.03] dark:disabled:text-gray-500"
+                        />
+                    </div>
+                }
+
+                <!-- Tujuan -->
+                <div>
+                    <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
+                        Tujuan
+                    </label>
+                    <textarea
+                        rows="5"
+                        readonly
+                        disabled
+                        class="dark:bg-dark-900 shadow-theme-xs w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 focus:outline-hidden disabled:border-gray-100 disabled:bg-gray-50 disabled:text-gray-500 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:disabled:border-gray-800 dark:disabled:bg-white/[0.03] dark:disabled:text-gray-500"
+                    >@data.Purpose</textarea>
                 </div>
             </div>
+        </section>
 
-            <!-- Kota Asal -->
-            <div>
-                <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
-                    Kota Asal
-                </label>
-                <input
-                    type="text"
-                    value="Jakarta"
-                    readonly
-                    disabled
-                    class="dark:bg-dark-900 shadow-theme-xs h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 focus:outline-hidden disabled:border-gray-100 disabled:bg-gray-50 disabled:text-gray-500 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:disabled:border-gray-800 dark:disabled:bg-white/[0.03] dark:disabled:text-gray-500"
-                />
+        <section class="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
+            <div class="rounded-2xl border border-gray-200 bg-white p-5 text-center dark:border-gray-800 dark:bg-white/[0.03]">
+                <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Total Hari</p>
+                <p class="mt-2 text-2xl font-semibold text-gray-800 dark:text-white/90">@data.TotalDays Hari</p>
             </div>
-
-            <!-- Kota Tujuan -->
-            <div x-show="!isLuarNegeri">
-                <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
-                    Kota Tujuan
-                </label>
-                <input
-                    type="text"
-                    value="Surabaya"
-                    readonly
-                    disabled
-                    class="dark:bg-dark-900 shadow-theme-xs h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 focus:outline-hidden disabled:border-gray-100 disabled:bg-gray-50 disabled:text-gray-500 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:disabled:border-gray-800 dark:disabled:bg-white/[0.03] dark:disabled:text-gray-500"
-                />
+            <div class="rounded-2xl border border-gray-200 bg-white p-5 text-center dark:border-gray-800 dark:bg-white/[0.03]">
+                <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Jarak</p>
+                <p class="mt-2 text-2xl font-semibold text-gray-800 dark:text-white/90">
+                    @(data.Distance.HasValue ? $"{data.Distance.Value:N0} km" : "-")
+                </p>
             </div>
-
-            <!-- Negara Tujuan -->
-            <div x-show="isLuarNegeri">
-                <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
-                    Negara Tujuan
-                </label>
-                <input
-                    type="text"
-                    value=""
-                    readonly
-                    disabled
-                    class="dark:bg-dark-900 shadow-theme-xs h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 focus:outline-hidden disabled:border-gray-100 disabled:bg-gray-50 disabled:text-gray-500 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:disabled:border-gray-800 dark:disabled:bg-white/[0.03] dark:disabled:text-gray-500"
-                />
+            <div class="rounded-2xl border border-gray-200 bg-white p-5 text-center dark:border-gray-800 dark:bg-white/[0.03]">
+                <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Total Uang Saku</p>
+                <p class="mt-2 text-2xl font-semibold text-gray-800 dark:text-white/90">
+                    Rp @data.PocketMoney.ToString("N0")
+                </p>
             </div>
+        </section>
 
-            <!-- Tujuan -->
-            <div>
-                <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
-                    Tujuan
-                </label>
-                <textarea
-                    rows="5"
-                    readonly
-                    disabled
-                    class="dark:bg-dark-900 shadow-theme-xs w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 focus:outline-hidden disabled:border-gray-100 disabled:bg-gray-50 disabled:text-gray-500 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:disabled:border-gray-800 dark:disabled:bg-white/[0.03] dark:disabled:text-gray-500"
-                >Menghadiri rapat koordinasi proyek pembangunan infrastruktur di kantor cabang Surabaya.</textarea>
-            </div>
-
-        </div>
-    </div>
-
-    <!-- Section 3: Info Box (Total Hari, Jarak, Total Uang) -->
-    <div class="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
-        <div class="rounded-2xl border border-gray-200 bg-white p-5 text-center dark:border-gray-800 dark:bg-white/[0.03]">
-            <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Total Hari</p>
-            <p class="mt-2 text-2xl font-semibold text-gray-800 dark:text-white/90">3 Hari</p>
-        </div>
-        <div class="rounded-2xl border border-gray-200 bg-white p-5 text-center dark:border-gray-800 dark:bg-white/[0.03]">
-            <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Jarak</p>
-            <p class="mt-2 text-2xl font-semibold text-gray-800 dark:text-white/90">780 km</p>
-        </div>
-        <div class="rounded-2xl border border-gray-200 bg-white p-5 text-center dark:border-gray-800 dark:bg-white/[0.03]">
-            <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Total Uang</p>
-            <p class="mt-2 text-2xl font-semibold text-gray-800 dark:text-white/90">Rp 2.500.000</p>
-        </div>
-    </div>
-
-    <!-- Section 4: Tombol Aksi -->
-    <div class="mt-6 flex justify-end gap-3">
-        <button class="inline-flex items-center justify-center gap-2 rounded-lg bg-success-500 px-5 py-3 text-sm font-medium text-white shadow-theme-xs hover:bg-success-600">
-            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <polyline points="20 6 9 17 4 12"></polyline>
-            </svg>
-            Setujui
-        </button>
-        <button class="inline-flex items-center justify-center gap-2 rounded-lg bg-error-500 px-5 py-3 text-sm font-medium text-white shadow-theme-xs hover:bg-error-600">
-            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <line x1="18" y1="6" x2="6" y2="18"></line>
-                <line x1="6" y1="6" x2="18" y2="18"></line>
-            </svg>
-            Tolak
-        </button>
-    </div>
-
+        <section class="mt-6 flex justify-end gap-3">
+            <button 
+                @onclick='() => HandleApproval("approved")'
+                disabled="@isSubmitting"
+                class="inline-flex items-center justify-center gap-2 rounded-lg bg-success-500 px-5 py-3 text-sm font-medium text-white shadow-theme-xs hover:bg-success-600 disabled:opacity-50"
+            >
+                @if (isSubmitting && selectedStatus == "approved")
+                {
+                    <span class="h-4 w-4 animate-spin rounded-full border-2 border-solid border-white border-t-transparent"></span>
+                }
+                else
+                {
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="20 6 9 17 4 12"></polyline>
+                    </svg>
+                }
+                Setujui
+            </button>
+            <button 
+                @onclick='() => HandleApproval("rejected")'
+                disabled="@isSubmitting"
+                class="inline-flex items-center justify-center gap-2 rounded-lg bg-error-500 px-5 py-3 text-sm font-medium text-white shadow-theme-xs hover:bg-error-600 disabled:opacity-50"
+            >
+                @if (isSubmitting && selectedStatus == "rejected")
+                {
+                    <span class="h-4 w-4 animate-spin rounded-full border-2 border-solid border-white border-t-transparent"></span>
+                }
+                else
+                {
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                }
+                Tolak
+            </button>
+        </section>
+    }
 </div>
+
+@code {
+    [Parameter] public string Id { get; set; } = string.Empty;
+
+    private BusinessTripRequestDetail? data;
+    private bool isLoadingData = true;
+    private bool isSubmitting = false;
+    private string selectedStatus = "";
+    private string errorMessage = "";
+    private bool isLuarNegeri = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            if (int.TryParse(Id, out int idVal))
+            {
+                var result = await PerdinService.GetDetailAsync(idVal);
+                if (result.Success && result.Data != null)
+                {
+                    data = result.Data;
+                    isLuarNegeri = data.DestinationCityId == null;
+                }
+                else
+                {
+                    errorMessage = result.Message;
+                }
+            }
+            else
+            {
+                errorMessage = "ID pengajuan tidak valid.";
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = "Terjadi kesalahan saat memuat data pengajuan dari server.";
+        }
+        finally
+        {
+            isLoadingData = false;
+        }
+    }
+
+    private async Task HandleApproval(string status)
+    {
+        isSubmitting = true;
+        selectedStatus = status;
+        errorMessage = "";
+        StateHasChanged();
+
+        try
+        {
+            var req = new BusinessTripRequestApprovalRequest { Status = status };
+            int idVal = int.Parse(Id);
+            var result = await PerdinService.ApprovalAsync(idVal, req);
+
+            if (result.Success)
+            {
+                Navigation.NavigateTo("/perdin?success=" + Uri.EscapeDataString(result.Message));
+            }
+            else
+            {
+                errorMessage = result.Message;
+                _ = AutoDismissError();
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = "Gagal memproses persetujuan pengajuan.";
+            _ = AutoDismissError();
+        }
+        finally
+        {
+            isSubmitting = false;
+            selectedStatus = "";
+            StateHasChanged();
+        }
+    }
+
+    private async Task AutoDismissError()
+    {
+        await Task.Delay(5000);
+        errorMessage = "";
+        StateHasChanged();
+    }
+
+    private string FormatTanggalIndo(DateOnly date)
+    {
+        var bulan = new[] { "", "Januari", "Februari", "Maret", "April", "Mei", "Juni",
+                           "Juli", "Agustus", "September", "Oktober", "November", "Desember" };
+        return $"{date.Day} {bulan[date.Month]} {date.Year}";
+    }
+}

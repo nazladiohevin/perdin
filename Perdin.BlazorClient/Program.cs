@@ -14,6 +14,7 @@ string backendApiUrl = builder.Configuration["BackendApiUrl"] ?? throw new Inval
 builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(backendApiUrl) });
 
 builder.Services.AddScoped<AuthService>();
+builder.Services.AddScoped<BusinessTripRequestService>();
 builder.Services.AddScoped<AuthenticationStateProvider, JwtAuthenticationStateProvider>();
 builder.Services.AddAuthorizationCore();
 builder.Services.AddBlazoredToast();
