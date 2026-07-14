@@ -399,16 +399,36 @@ namespace Perdin.WebApi.Controllers
                 return BadRequest(ApiResponse<object>.ErrorResponse(string.Join("; ", errors)));
             }
 
-            var tripRequest = await _context.BusinessTripRequests.FirstOrDefaultAsync(r => r.Id == id);
-            if (tripRequest == null) return NotFound(ApiResponse<object>.ErrorResponse("Pengajuan tidak ditemukan"));
+            await using var transaction = await _context.Database.BeginTransactionAsync();
 
-            tripRequest.Status = request.Status.ToLower();
-            tripRequest.ApproverId = GetCurrentUserId();
-            tripRequest.ApprovedAt = DateTime.UtcNow;
+            try
+            {
+                var tripRequest = await _context.BusinessTripRequests
+                    .FromSqlInterpolated($"SELECT * FROM business_trip_requests WITH (UPDLOCK) WHERE id = {id}")
+                    .FirstOrDefaultAsync();
 
-            await _context.SaveChangesAsync();
+                if (tripRequest == null) 
+                    return NotFound(ApiResponse<object>.ErrorResponse("Pengajuan tidak ditemukan"));
 
-            return Ok(ApiResponse<object?>.SuccessResponse(null, "Status pengajuan berhasil diupdate"));
+                if (tripRequest.Status != "reviewed")
+                {
+                    return BadRequest(ApiResponse<object>.ErrorResponse("Pengajuan ini sudah diproses sebelumnya."));
+                }
+
+                tripRequest.Status = request.Status.ToLower();
+                tripRequest.ApproverId = GetCurrentUserId();
+                tripRequest.ApprovedAt = DateTime.UtcNow;
+
+                await _context.SaveChangesAsync();
+                await transaction.CommitAsync();
+
+                return Ok(ApiResponse<object?>.SuccessResponse(null, "Status pengajuan berhasil diupdate"));
+            }
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync();
+                return StatusCode(500, ApiResponse<object>.ErrorResponse("Terjadi kesalahan pada server saat memproses persetujuan."));
+            }
         }
     }
 }
