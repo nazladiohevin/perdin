@@ -1,10 +1,13 @@
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using Perdin.WebApi.Data;
 using Perdin.WebApi.DTOs;
-using Perdin.WebApi.DTOs.User;
-using Perdin.WebApi.Models;
+using Perdin.WebApi.Features.Users.Create;
+using Perdin.WebApi.Features.Users.Delete;
+using Perdin.WebApi.Features.Users.GetAll;
+using Perdin.WebApi.Features.Users.GetById;
+using Perdin.WebApi.Features.Users.GetRoles;
+using Perdin.WebApi.Features.Users.Update;
 
 namespace Perdin.WebApi.Controllers
 {
@@ -13,16 +16,16 @@ namespace Perdin.WebApi.Controllers
     [Authorize(Roles = "ADMIN,SDM")]
     public class UsersController : ControllerBase
     {
-        private readonly AppDbContext _context;
+        private readonly IMediator _mediator;
 
-        public UsersController(AppDbContext context)
+        public UsersController(IMediator mediator)
         {
-            _context = context;
+            _mediator = mediator;
         }
 
         [HttpPost]
         [Authorize(Roles = "ADMIN")]
-        public async Task<IActionResult> Create([FromBody] UserCreateRequest request)
+        public async Task<IActionResult> Create([FromBody] CreateUserRequest request)
         {
             if (!ModelState.IsValid)
             {
@@ -32,117 +35,68 @@ namespace Perdin.WebApi.Controllers
                     .ToList();
                 return BadRequest(ApiResponse<object>.ErrorResponse(string.Join("; ", errors)));
             }
-            if (await _context.Users.AnyAsync(u => u.Username == request.Username))
-            {
-                return BadRequest(ApiResponse<object>.ErrorResponse("Username sudah dipakai"));
-            }
 
-            if (await _context.Users.AnyAsync(u => u.Email == request.Email))
-            {
-                return BadRequest(ApiResponse<object>.ErrorResponse("Email sudah dipakai"));
-            }
-
-            using var transaction = await _context.Database.BeginTransactionAsync();
             try
             {
-                var user = new User
-                {
-                    Name = request.Name,
-                    Username = request.Username,
-                    Email = request.Email,
-                    Password = BCrypt.Net.BCrypt.HashPassword(request.Password),
-                    CreatedAt = DateTime.UtcNow
-                };
-
-                _context.Users.Add(user);
-                await _context.SaveChangesAsync();
-
-                if (request.RoleIds != null && request.RoleIds.Any())
-                {
-                    var roles = await _context.Roles.Where(r => request.RoleIds.Contains(r.Id)).ToListAsync();
-                    
-                    if (roles.Count != request.RoleIds.Count)
-                    {
-                        return BadRequest(ApiResponse<object>.ErrorResponse("Satu atau lebih role id tidak ada"));
-                    }
-
-                    user.Roles = roles;
-                    await _context.SaveChangesAsync();
-                }
-
-                await transaction.CommitAsync();
-
+                var command = new CreateUserCommand { Request = request };
+                await _mediator.Send(command);
                 return StatusCode(201, ApiResponse<object?>.SuccessResponse(null, "Akun berhasil dibuat"));
             }
-            catch (Exception)
+            catch (BadHttpRequestException ex)
             {
-                await transaction.RollbackAsync();
-                return StatusCode(500, ApiResponse<object>.ErrorResponse("Terjadi error ketika membuat akun baru"));
+                return StatusCode(ex.StatusCode, ApiResponse<object>.ErrorResponse(ex.Message));
             }
         }
 
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
-            // Global Query Filter (DeletedAt == null) applies automatically
-            var users = await _context.Users
-                .Include(u => u.Roles)
-                .OrderByDescending(u => u.CreatedAt)
-                .Select(u => new UserResponse
-                {
-                    Id = u.Id,
-                    Name = u.Name,
-                    Username = u.Username,
-                    Email = u.Email,
-                    CreatedAt = u.CreatedAt,
-                    UpdatedAt = u.UpdatedAt,
-                    Roles = u.Roles.Select(r => new RoleItem { Id = r.Id, Name = r.Name }).ToList()
-                })
-                .ToListAsync();
-
-            return Ok(ApiResponse<List<UserResponse>>.SuccessResponse(users, "Akun berhasil diambil"));
+            try
+            {
+                var query = new GetAllUsersQuery();
+                var result = await _mediator.Send(query);
+                return Ok(ApiResponse<IEnumerable<GetAllUsersResponse>>.SuccessResponse(result, "Akun berhasil diambil"));
+            }
+            catch (BadHttpRequestException ex)
+            {
+                return StatusCode(ex.StatusCode, ApiResponse<object>.ErrorResponse(ex.Message));
+            }
         }
 
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(int id)
         {
-            var user = await _context.Users
-                .Include(u => u.Roles)
-                .Where(u => u.Id == id)
-                .Select(u => new UserResponse
-                {
-                    Id = u.Id,
-                    Name = u.Name,
-                    Username = u.Username,
-                    Email = u.Email,
-                    CreatedAt = u.CreatedAt,
-                    UpdatedAt = u.UpdatedAt,
-                    Roles = u.Roles.Select(r => new RoleItem { Id = r.Id, Name = r.Name }).ToList()
-                })
-                .FirstOrDefaultAsync();
-
-            if (user == null)
+            try
             {
-                return NotFound(ApiResponse<object>.ErrorResponse("Akun tidak ditemukan"));
+                var query = new GetUserByIdQuery { Id = id };
+                var result = await _mediator.Send(query);
+                return Ok(ApiResponse<GetAllUsersResponse>.SuccessResponse(result, "Akun ditemukan"));
             }
-
-            return Ok(ApiResponse<UserResponse>.SuccessResponse(user, "Akun ditemukan"));
+            catch (BadHttpRequestException ex)
+            {
+                return StatusCode(ex.StatusCode, ApiResponse<object>.ErrorResponse(ex.Message));
+            }
         }
 
         [HttpGet("/api/roles")]
         [Authorize(Roles = "ADMIN")]
         public async Task<IActionResult> GetRoles()
         {
-            var roles = await _context.Roles
-                .Select(r => new RoleItem { Id = r.Id, Name = r.Name })
-                .ToListAsync();
-
-            return Ok(ApiResponse<List<RoleItem>>.SuccessResponse(roles, "Roles berhasil diambil"));
+            try
+            {
+                var query = new GetRolesQuery();
+                var result = await _mediator.Send(query);
+                return Ok(ApiResponse<IEnumerable<GetRolesResponse>>.SuccessResponse(result, "Roles berhasil diambil"));
+            }
+            catch (BadHttpRequestException ex)
+            {
+                return StatusCode(ex.StatusCode, ApiResponse<object>.ErrorResponse(ex.Message));
+            }
         }
 
         [HttpPut("{id}")]
         [Authorize(Roles = "ADMIN")]
-        public async Task<IActionResult> Update(int id, [FromBody] UserUpdateRequest request)
+        public async Task<IActionResult> Update(int id, [FromBody] UpdateUserRequest request)
         {
             if (!ModelState.IsValid)
             {
@@ -152,58 +106,16 @@ namespace Perdin.WebApi.Controllers
                     .ToList();
                 return BadRequest(ApiResponse<object>.ErrorResponse(string.Join("; ", errors)));
             }
-            var user = await _context.Users.Include(u => u.Roles).FirstOrDefaultAsync(u => u.Id == id);
 
-            if (user == null)
-            {
-                return NotFound(ApiResponse<object>.ErrorResponse("User tidak ditemukan"));
-            }
-
-            if (await _context.Users.AnyAsync(u => u.Username == request.Username && u.Id != id))
-            {
-                return BadRequest(ApiResponse<object>.ErrorResponse("Username sudah dipakai"));
-            }
-
-            if (await _context.Users.AnyAsync(u => u.Email == request.Email && u.Id != id))
-            {
-                return BadRequest(ApiResponse<object>.ErrorResponse("Email sudah dipakai"));
-            }
-
-            using var transaction = await _context.Database.BeginTransactionAsync();
             try
             {
-                user.Name = request.Name;
-                user.Username = request.Username;
-                user.Email = request.Email;
-                if (!string.IsNullOrEmpty(request.Password))
-                {
-                    user.Password = BCrypt.Net.BCrypt.HashPassword(request.Password);
-                }
-                user.UpdatedAt = DateTime.UtcNow;
-
-                user.Roles.Clear();
-                
-                if (request.RoleIds != null && request.RoleIds.Any())
-                {
-                    var roles = await _context.Roles.Where(r => request.RoleIds.Contains(r.Id)).ToListAsync();
-                    
-                    if (roles.Count != request.RoleIds.Count)
-                    {
-                        return BadRequest(ApiResponse<object>.ErrorResponse("Satu atau lebih role id tidak ada"));
-                    }
-
-                    user.Roles.AddRange(roles);
-                }
-
-                await _context.SaveChangesAsync();
-                await transaction.CommitAsync();
-
+                var command = new UpdateUserCommand { Id = id, Request = request };
+                await _mediator.Send(command);
                 return Ok(ApiResponse<object?>.SuccessResponse(null, "Akun berhasil di ubah"));
             }
-            catch (Exception)
+            catch (BadHttpRequestException ex)
             {
-                await transaction.RollbackAsync();
-                return StatusCode(500, ApiResponse<object>.ErrorResponse("Terjadi error ketika mengubah akun"));
+                return StatusCode(ex.StatusCode, ApiResponse<object>.ErrorResponse(ex.Message));
             }
         }
 
@@ -211,18 +123,16 @@ namespace Perdin.WebApi.Controllers
         [Authorize(Roles = "ADMIN")]
         public async Task<IActionResult> Delete(int id)
         {
-            var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == id);
-
-            if (user == null)
+            try
             {
-                return NotFound(ApiResponse<object>.ErrorResponse("Akun tidak ditemukan"));
+                var command = new DeleteUserCommand { Id = id };
+                await _mediator.Send(command);
+                return Ok(ApiResponse<object?>.SuccessResponse(null, "Akun berhasil dihapus"));
             }
-
-            user.DeletedAt = DateTime.UtcNow;
-            
-            await _context.SaveChangesAsync();
-
-            return Ok(ApiResponse<object?>.SuccessResponse(null, "Akun berhasil dihapus"));
+            catch (BadHttpRequestException ex)
+            {
+                return StatusCode(ex.StatusCode, ApiResponse<object>.ErrorResponse(ex.Message));
+            }
         }
     }
 }

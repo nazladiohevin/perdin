@@ -1,11 +1,12 @@
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using Perdin.WebApi.Data;
 using Perdin.WebApi.DTOs;
-using Perdin.WebApi.DTOs.City;
-using Perdin.WebApi.DTOs.Province;
-using Perdin.WebApi.DTOs.Country;
+using Perdin.WebApi.Features.Cities.Create;
+using Perdin.WebApi.Features.Cities.Delete;
+using Perdin.WebApi.Features.Cities.GetAll;
+using Perdin.WebApi.Features.Cities.GetById;
+using Perdin.WebApi.Features.Cities.Update;
 
 namespace Perdin.WebApi.Controllers
 {
@@ -14,65 +15,26 @@ namespace Perdin.WebApi.Controllers
     [Authorize]
     public class CitiesController : ControllerBase
     {
-        private readonly AppDbContext _context;
+        private readonly IMediator _mediator;
 
-        public CitiesController(AppDbContext context)
+        public CitiesController(IMediator mediator)
         {
-            _context = context;
+            _mediator = mediator;
         }
 
         [HttpGet]
-        [AllowAnonymous] // Allow any user to fetch cities for trip creation
+        [AllowAnonymous]
         public async Task<IActionResult> GetAllCities([FromQuery] string? include = null)
         {
-            var includeProvince = !string.IsNullOrEmpty(include) && 
-                (include.Equals("province", StringComparison.OrdinalIgnoreCase) || 
-                 include.Equals("provinces", StringComparison.OrdinalIgnoreCase));
-
-            var query = _context.Cities.OrderByDescending(c => c.CreatedAt).AsQueryable();
-
-            if (includeProvince)
+            try
             {
-                var cities = await query
-                    .Select(c => new CityResponse
-                    {
-                        Id = c.Id,
-                        ProvinceId = c.ProvinceId,
-                        Name = c.Name,
-                        Latitude = c.Latitude,
-                        Longitude = c.Longitude,
-                        CreatedAt = c.CreatedAt,
-                        UpdatedAt = c.UpdatedAt,
-                        Province = new ProvinceResponse
-                        {
-                            Id = c.Province.Id,
-                            CountryId = c.Province.CountryId,
-                            Name = c.Province.Name,
-                            CreatedAt = c.Province.CreatedAt,
-                            UpdatedAt = c.Province.UpdatedAt
-                        }
-                    })
-                    .ToListAsync();
-
-                return Ok(ApiResponse<IEnumerable<CityResponse>>.SuccessResponse(cities, "Berhasil mengambil data kota."));
+                var query = new GetAllCitiesQuery { Include = include };
+                var result = await _mediator.Send(query);
+                return Ok(ApiResponse<IEnumerable<GetAllCitiesResponse>>.SuccessResponse(result, "Berhasil mengambil data kota."));
             }
-            else
+            catch (BadHttpRequestException ex)
             {
-                var cities = await query
-                    .Select(c => new CityResponse
-                    {
-                        Id = c.Id,
-                        ProvinceId = c.ProvinceId,
-                        Name = c.Name,
-                        Latitude = c.Latitude,
-                        Longitude = c.Longitude,
-                        CreatedAt = c.CreatedAt,
-                        UpdatedAt = c.UpdatedAt,
-                        Province = null
-                    })
-                    .ToListAsync();
-
-                return Ok(ApiResponse<IEnumerable<CityResponse>>.SuccessResponse(cities, "Berhasil mengambil data kota."));
+                return StatusCode(ex.StatusCode, ApiResponse<object>.ErrorResponse(ex.Message));
             }
         }
 
@@ -80,23 +42,21 @@ namespace Perdin.WebApi.Controllers
         [AllowAnonymous]
         public async Task<IActionResult> GetCity(int id)
         {
-            var city = await _context.Cities
-                .Include(c => c.Province)
-                .ThenInclude(p => p.Country)
-                .FirstOrDefaultAsync(c => c.Id == id);
-
-            if (city == null)
+            try
             {
-                return NotFound(ApiResponse<object>.ErrorResponse("Data kota tidak ditemukan."));
+                var query = new GetCityByIdQuery { Id = id };
+                var result = await _mediator.Send(query);
+                return Ok(ApiResponse<GetCityByIdResponse>.SuccessResponse(result, "Berhasil mengambil data kota."));
             }
-
-            var response = MapToCityDetailResponse(city);
-            return Ok(ApiResponse<CityDetailResponse>.SuccessResponse(response, "Berhasil mengambil data kota."));
+            catch (BadHttpRequestException ex)
+            {
+                return StatusCode(ex.StatusCode, ApiResponse<object>.ErrorResponse(ex.Message));
+            }
         }
 
         [HttpPost]
         [Authorize(Roles = "ADMIN")]
-        public async Task<IActionResult> CreateCity([FromBody] CityCreateRequest request)
+        public async Task<IActionResult> CreateCity([FromBody] CreateCityRequest request)
         {
             if (!ModelState.IsValid)
             {
@@ -107,32 +67,21 @@ namespace Perdin.WebApi.Controllers
                 return BadRequest(ApiResponse<object>.ErrorResponse(string.Join("; ", errors)));
             }
 
-            var city = new Models.City
+            try
             {
-                Name = request.Name,
-                ProvinceId = request.ProvinceId!.Value,
-                Latitude = request.Latitude!.Value,
-                Longitude = request.Longitude!.Value,
-                CreatedAt = DateTime.UtcNow
-            };
-
-            _context.Cities.Add(city);
-            await _context.SaveChangesAsync();
-
-            // Load Province and Country relation for the response
-            await _context.Entry(city)
-                .Reference(c => c.Province)
-                .Query()
-                .Include(p => p.Country)
-                .LoadAsync();
-
-            var response = MapToCityDetailResponse(city);
-            return Ok(ApiResponse<CityDetailResponse>.SuccessResponse(response, "Berhasil menambahkan kota."));
+                var command = new CreateCityCommand { Request = request };
+                var result = await _mediator.Send(command);
+                return Ok(ApiResponse<GetCityByIdResponse>.SuccessResponse(result, "Berhasil menambahkan kota."));
+            }
+            catch (BadHttpRequestException ex)
+            {
+                return StatusCode(ex.StatusCode, ApiResponse<object>.ErrorResponse(ex.Message));
+            }
         }
 
         [HttpPut("{id}")]
         [Authorize(Roles = "ADMIN")]
-        public async Task<IActionResult> UpdateCity(int id, [FromBody] CityUpdateRequest request)
+        public async Task<IActionResult> UpdateCity(int id, [FromBody] UpdateCityRequest request)
         {
             if (!ModelState.IsValid)
             {
@@ -143,90 +92,32 @@ namespace Perdin.WebApi.Controllers
                 return BadRequest(ApiResponse<object>.ErrorResponse(string.Join("; ", errors)));
             }
 
-            var city = await _context.Cities
-                .Include(c => c.Province)
-                .ThenInclude(p => p.Country)
-                .FirstOrDefaultAsync(c => c.Id == id);
-
-            if (city == null)
+            try
             {
-                return NotFound(ApiResponse<object>.ErrorResponse("Data kota tidak ditemukan."));
+                var command = new UpdateCityCommand { Id = id, Request = request };
+                var result = await _mediator.Send(command);
+                return Ok(ApiResponse<GetCityByIdResponse>.SuccessResponse(result, "Berhasil mengubah data kota."));
             }
-
-            city.Name = request.Name;
-            city.ProvinceId = request.ProvinceId!.Value;
-            city.Latitude = request.Latitude!.Value;
-            city.Longitude = request.Longitude!.Value;
-            city.UpdatedAt = DateTime.UtcNow;
-
-            await _context.SaveChangesAsync();
-
-            // Reload Province if it was changed
-            if (city.Province == null || city.Province.Id != city.ProvinceId)
+            catch (BadHttpRequestException ex)
             {
-                await _context.Entry(city)
-                    .Reference(c => c.Province)
-                    .Query()
-                    .Include(p => p.Country)
-                    .LoadAsync();
+                return StatusCode(ex.StatusCode, ApiResponse<object>.ErrorResponse(ex.Message));
             }
-
-            var response = MapToCityDetailResponse(city);
-            return Ok(ApiResponse<CityDetailResponse>.SuccessResponse(response, "Berhasil mengubah data kota."));
         }
 
         [HttpDelete("{id}")]
         [Authorize(Roles = "ADMIN")]
         public async Task<IActionResult> DeleteCity(int id)
         {
-            var city = await _context.Cities.FindAsync(id);
-            if (city == null)
+            try
             {
-                return NotFound(ApiResponse<object>.ErrorResponse("Data kota tidak ditemukan."));
+                var command = new DeleteCityCommand { Id = id };
+                await _mediator.Send(command);
+                return Ok(ApiResponse<object>.SuccessResponse(null!, "Berhasil menghapus kota."));
             }
-
-            var isUsedInBusinessTrips = await _context.BusinessTripRequests
-                .AnyAsync(b => b.OriginCityId == id || b.DestinationCityId == id);
-            
-            if (isUsedInBusinessTrips)
+            catch (BadHttpRequestException ex)
             {
-                return BadRequest(ApiResponse<object>.ErrorResponse("Gagal menghapus! Kota ini sedang digunakan pada data Perjalanan Dinas."));
+                return StatusCode(ex.StatusCode, ApiResponse<object>.ErrorResponse(ex.Message));
             }
-
-            _context.Cities.Remove(city);
-            await _context.SaveChangesAsync();
-
-            return Ok(ApiResponse<object>.SuccessResponse(null!, "Berhasil menghapus kota."));
-        }
-
-        private CityDetailResponse MapToCityDetailResponse(Models.City city)
-        {
-            return new CityDetailResponse
-            {
-                Id = city.Id,
-                ProvinceId = city.ProvinceId,
-                Name = city.Name,
-                Latitude = city.Latitude,
-                Longitude = city.Longitude,
-                CreatedAt = city.CreatedAt,
-                UpdatedAt = city.UpdatedAt,
-                Province = city.Province != null ? new ProvinceDetailResponse
-                {
-                    Id = city.Province.Id,
-                    CountryId = city.Province.CountryId,
-                    Name = city.Province.Name,
-                    CreatedAt = city.Province.CreatedAt,
-                    UpdatedAt = city.Province.UpdatedAt,
-                    Country = city.Province.Country != null ? new CountryResponse
-                    {
-                        Id = city.Province.Country.Id,
-                        Name = city.Province.Country.Name,
-                        IsForeign = city.Province.Country.IsForeign,
-                        CreatedAt = city.Province.Country.CreatedAt,
-                        UpdatedAt = city.Province.Country.UpdatedAt
-                    } : null!
-                } : null!
-            };
         }
     }
 }
