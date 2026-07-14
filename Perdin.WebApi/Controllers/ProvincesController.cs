@@ -1,10 +1,12 @@
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using Perdin.WebApi.Data;
 using Perdin.WebApi.DTOs;
-using Perdin.WebApi.DTOs.Province;
-using Perdin.WebApi.DTOs.Country;
+using Perdin.WebApi.Features.Provinces.Create;
+using Perdin.WebApi.Features.Provinces.Delete;
+using Perdin.WebApi.Features.Provinces.GetAll;
+using Perdin.WebApi.Features.Provinces.GetById;
+using Perdin.WebApi.Features.Provinces.Update;
 
 namespace Perdin.WebApi.Controllers
 {
@@ -13,67 +15,45 @@ namespace Perdin.WebApi.Controllers
     [Authorize(Roles = "ADMIN")]
     public class ProvincesController : ControllerBase
     {
-        private readonly AppDbContext _context;
+        private readonly IMediator _mediator;
 
-        public ProvincesController(AppDbContext context)
+        public ProvincesController(IMediator mediator)
         {
-            _context = context;
+            _mediator = mediator;
         }
 
         [HttpGet]
         public async Task<IActionResult> GetAllProvinces()
         {
-            var provinces = await _context.Provinces
-                .OrderByDescending(p => p.CreatedAt)
-                .Select(p => new ProvinceResponse
-                {
-                    Id = p.Id,
-                    CountryId = p.CountryId,
-                    Name = p.Name,
-                    Island = p.Island,
-                    CreatedAt = p.CreatedAt,
-                    UpdatedAt = p.UpdatedAt
-                })
-                .ToListAsync();
-
-            return Ok(ApiResponse<IEnumerable<ProvinceResponse>>.SuccessResponse(provinces, "Berhasil mengambil data provinsi."));
+            try
+            {
+                var query = new GetAllProvincesQuery();
+                var result = await _mediator.Send(query);
+                return Ok(ApiResponse<IEnumerable<GetAllProvincesResponse>>.SuccessResponse(result, "Berhasil mengambil data provinsi."));
+            }
+            catch (BadHttpRequestException ex)
+            {
+                return StatusCode(ex.StatusCode, ApiResponse<object>.ErrorResponse(ex.Message));
+            }
         }
 
         [HttpGet("{id}")]
         public async Task<IActionResult> GetProvince(int id)
         {
-            var province = await _context.Provinces
-                .Include(p => p.Country)
-                .FirstOrDefaultAsync(p => p.Id == id);
-
-            if (province == null)
+            try
             {
-                return NotFound(ApiResponse<object>.ErrorResponse("Data provinsi tidak ditemukan."));
+                var query = new GetProvinceByIdQuery { Id = id };
+                var result = await _mediator.Send(query);
+                return Ok(ApiResponse<GetProvinceByIdResponse>.SuccessResponse(result, "Berhasil mengambil data."));
             }
-
-            var response = new ProvinceDetailResponse
+            catch (BadHttpRequestException ex)
             {
-                Id = province.Id,
-                CountryId = province.CountryId,
-                Name = province.Name,
-                Island = province.Island,
-                CreatedAt = province.CreatedAt,
-                UpdatedAt = province.UpdatedAt,
-                Country = province.Country != null ? new CountryResponse
-                {
-                    Id = province.Country.Id,
-                    Name = province.Country.Name,
-                    IsForeign = province.Country.IsForeign,
-                    CreatedAt = province.Country.CreatedAt,
-                    UpdatedAt = province.Country.UpdatedAt
-                } : null!
-            };
-
-            return Ok(ApiResponse<ProvinceDetailResponse>.SuccessResponse(response, "Berhasil mengambil data."));
+                return StatusCode(ex.StatusCode, ApiResponse<object>.ErrorResponse(ex.Message));
+            }
         }
 
         [HttpPost]
-        public async Task<IActionResult> CreateProvince([FromBody] ProvinceCreateRequest request)
+        public async Task<IActionResult> CreateProvince([FromBody] CreateProvinceRequest request)
         {
             if (!ModelState.IsValid)
             {
@@ -84,43 +64,20 @@ namespace Perdin.WebApi.Controllers
                 return BadRequest(ApiResponse<object>.ErrorResponse(string.Join("; ", errors)));
             }
 
-            var province = new Models.Province
+            try
             {
-                Name = request.Name,
-                Island = request.Island,
-                CountryId = request.CountryId,
-                CreatedAt = DateTime.UtcNow
-            };
-
-            _context.Provinces.Add(province);
-            await _context.SaveChangesAsync();
-
-            // Load Country relation
-            await _context.Entry(province).Reference(p => p.Country).LoadAsync();
-
-            var response = new ProvinceDetailResponse
+                var command = new CreateProvinceCommand { Request = request };
+                var result = await _mediator.Send(command);
+                return Ok(ApiResponse<GetProvinceByIdResponse>.SuccessResponse(result, "Berhasil menambahkan provinsi."));
+            }
+            catch (BadHttpRequestException ex)
             {
-                Id = province.Id,
-                CountryId = province.CountryId,
-                Name = province.Name,
-                Island = province.Island,
-                CreatedAt = province.CreatedAt,
-                UpdatedAt = province.UpdatedAt,
-                Country = province.Country != null ? new CountryResponse
-                {
-                    Id = province.Country.Id,
-                    Name = province.Country.Name,
-                    IsForeign = province.Country.IsForeign,
-                    CreatedAt = province.Country.CreatedAt,
-                    UpdatedAt = province.Country.UpdatedAt
-                } : null!
-            };
-
-            return Ok(ApiResponse<ProvinceDetailResponse>.SuccessResponse(response, "Berhasil menambahkan provinsi."));
+                return StatusCode(ex.StatusCode, ApiResponse<object>.ErrorResponse(ex.Message));
+            }
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateProvince(int id, [FromBody] ProvinceUpdateRequest request)
+        public async Task<IActionResult> UpdateProvince(int id, [FromBody] UpdateProvinceRequest request)
         {
             if (!ModelState.IsValid)
             {
@@ -131,68 +88,31 @@ namespace Perdin.WebApi.Controllers
                 return BadRequest(ApiResponse<object>.ErrorResponse(string.Join("; ", errors)));
             }
 
-            var province = await _context.Provinces
-                .Include(p => p.Country)
-                .FirstOrDefaultAsync(p => p.Id == id);
-
-            if (province == null)
+            try
             {
-                return NotFound(ApiResponse<object>.ErrorResponse("Data provinsi tidak ditemukan."));
+                var command = new UpdateProvinceCommand { Id = id, Request = request };
+                var result = await _mediator.Send(command);
+                return Ok(ApiResponse<GetProvinceByIdResponse>.SuccessResponse(result, "Berhasil mengubah data provinsi."));
             }
-
-            province.Name = request.Name;
-            province.Island = request.Island;
-            province.CountryId = request.CountryId;
-            province.UpdatedAt = DateTime.UtcNow;
-
-            await _context.SaveChangesAsync();
-
-            // Reload country if it was changed
-            if (province.Country == null || province.Country.Id != province.CountryId)
+            catch (BadHttpRequestException ex)
             {
-                await _context.Entry(province).Reference(p => p.Country).LoadAsync();
+                return StatusCode(ex.StatusCode, ApiResponse<object>.ErrorResponse(ex.Message));
             }
-
-            var response = new ProvinceDetailResponse
-            {
-                Id = province.Id,
-                CountryId = province.CountryId,
-                Name = province.Name,
-                Island = province.Island,
-                CreatedAt = province.CreatedAt,
-                UpdatedAt = province.UpdatedAt,
-                Country = province.Country != null ? new CountryResponse
-                {
-                    Id = province.Country.Id,
-                    Name = province.Country.Name,
-                    IsForeign = province.Country.IsForeign,
-                    CreatedAt = province.Country.CreatedAt,
-                    UpdatedAt = province.Country.UpdatedAt
-                } : null!
-            };
-
-            return Ok(ApiResponse<ProvinceDetailResponse>.SuccessResponse(response, "Berhasil mengubah data provinsi."));
         }
 
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteProvince(int id)
         {
-            var province = await _context.Provinces.FindAsync(id);
-            if (province == null)
+            try
             {
-                return NotFound(ApiResponse<object>.ErrorResponse("Data provinsi tidak ditemukan."));
+                var command = new DeleteProvinceCommand { Id = id };
+                await _mediator.Send(command);
+                return Ok(ApiResponse<object>.SuccessResponse(null!, "Berhasil menghapus provinsi."));
             }
-
-            var isUsedInCities = await _context.Cities.AnyAsync(c => c.ProvinceId == id);
-            if (isUsedInCities)
+            catch (BadHttpRequestException ex)
             {
-                return BadRequest(ApiResponse<object>.ErrorResponse("Gagal menghapus! Provinsi ini sedang digunakan pada data Kota."));
+                return StatusCode(ex.StatusCode, ApiResponse<object>.ErrorResponse(ex.Message));
             }
-
-            _context.Provinces.Remove(province);
-            await _context.SaveChangesAsync();
-
-            return Ok(ApiResponse<object>.SuccessResponse(null!, "Berhasil menghapus provinsi."));
         }
     }
 }
