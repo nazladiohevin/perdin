@@ -1,9 +1,12 @@
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using Perdin.WebApi.Data;
 using Perdin.WebApi.DTOs;
-using Perdin.WebApi.DTOs.Country;
+using Perdin.WebApi.Features.Countries.Create;
+using Perdin.WebApi.Features.Countries.Delete;
+using Perdin.WebApi.Features.Countries.GetAll;
+using Perdin.WebApi.Features.Countries.GetById;
+using Perdin.WebApi.Features.Countries.Update;
 
 namespace Perdin.WebApi.Controllers
 {
@@ -12,58 +15,48 @@ namespace Perdin.WebApi.Controllers
     [Authorize]
     public class CountriesController : ControllerBase
     {
-        private readonly AppDbContext _context;
+        private readonly IMediator _mediator;
 
-        public CountriesController(AppDbContext context)
+        public CountriesController(IMediator mediator)
         {
-            _context = context;
+            _mediator = mediator;
         }
 
         [HttpGet]
         [AllowAnonymous]
         public async Task<IActionResult> GetAllCountries()
         {
-            var countries = await _context.Countries
-                .OrderByDescending(c => c.CreatedAt)
-                .Select(c => new CountryResponse
-                {
-                    Id = c.Id,
-                    Name = c.Name,
-                    IsForeign = c.IsForeign,
-                    CreatedAt = c.CreatedAt,
-                    UpdatedAt = c.UpdatedAt
-                })
-                .ToListAsync();
-
-            return Ok(ApiResponse<IEnumerable<CountryResponse>>.SuccessResponse(countries, "Berhasil mengambil data negara."));
+            try
+            {
+                var query = new GetAllCountriesQuery();
+                var result = await _mediator.Send(query);
+                return Ok(ApiResponse<IEnumerable<GetAllCountriesResponse>>.SuccessResponse(result, "Berhasil mengambil data negara."));
+            }
+            catch (BadHttpRequestException ex)
+            {
+                return StatusCode(ex.StatusCode, ApiResponse<object>.ErrorResponse(ex.Message));
+            }
         }
 
         [HttpGet("{id}")]
         [AllowAnonymous]
         public async Task<IActionResult> GetCountry(int id)
         {
-            var country = await _context.Countries.FindAsync(id);
-
-            if (country == null)
+            try
             {
-                return NotFound(ApiResponse<object>.ErrorResponse("Data negara tidak ditemukan."));
+                var query = new GetCountryByIdQuery { Id = id };
+                var result = await _mediator.Send(query);
+                return Ok(ApiResponse<GetCountryByIdResponse>.SuccessResponse(result, "Berhasil mengambil data."));
             }
-
-            var response = new CountryResponse
+            catch (BadHttpRequestException ex)
             {
-                Id = country.Id,
-                Name = country.Name,
-                IsForeign = country.IsForeign,
-                CreatedAt = country.CreatedAt,
-                UpdatedAt = country.UpdatedAt
-            };
-
-            return Ok(ApiResponse<CountryResponse>.SuccessResponse(response, "Berhasil mengambil data."));
+                return StatusCode(ex.StatusCode, ApiResponse<object>.ErrorResponse(ex.Message));
+            }
         }
 
         [HttpPost]
         [Authorize(Roles = "ADMIN")]
-        public async Task<IActionResult> CreateCountry([FromBody] CountryCreateRequest request)
+        public async Task<IActionResult> CreateCountry([FromBody] CreateCountryRequest request)
         {
             if (!ModelState.IsValid)
             {
@@ -74,31 +67,21 @@ namespace Perdin.WebApi.Controllers
                 return BadRequest(ApiResponse<object>.ErrorResponse(string.Join("; ", errors)));
             }
 
-            var country = new Models.Country
+            try
             {
-                Name = request.Name,
-                IsForeign = request.IsForeign ?? false,
-                CreatedAt = DateTime.UtcNow
-            };
-
-            _context.Countries.Add(country);
-            await _context.SaveChangesAsync();
-
-            var response = new CountryResponse
+                var command = new CreateCountryCommand { Request = request };
+                var result = await _mediator.Send(command);
+                return Ok(ApiResponse<GetCountryByIdResponse>.SuccessResponse(result, "Berhasil menambahkan negara."));
+            }
+            catch (BadHttpRequestException ex)
             {
-                Id = country.Id,
-                Name = country.Name,
-                IsForeign = country.IsForeign,
-                CreatedAt = country.CreatedAt,
-                UpdatedAt = country.UpdatedAt
-            };
-
-            return Ok(ApiResponse<CountryResponse>.SuccessResponse(response, "Berhasil menambahkan negara."));
+                return StatusCode(ex.StatusCode, ApiResponse<object>.ErrorResponse(ex.Message));
+            }
         }
 
         [HttpPut("{id}")]
         [Authorize(Roles = "ADMIN")]
-        public async Task<IActionResult> UpdateCountry(int id, [FromBody] CountryUpdateRequest request)
+        public async Task<IActionResult> UpdateCountry(int id, [FromBody] UpdateCountryRequest request)
         {
             if (!ModelState.IsValid)
             {
@@ -109,56 +92,32 @@ namespace Perdin.WebApi.Controllers
                 return BadRequest(ApiResponse<object>.ErrorResponse(string.Join("; ", errors)));
             }
 
-            var country = await _context.Countries.FindAsync(id);
-            if (country == null)
+            try
             {
-                return NotFound(ApiResponse<object>.ErrorResponse("Data negara tidak ditemukan."));
+                var command = new UpdateCountryCommand { Id = id, Request = request };
+                var result = await _mediator.Send(command);
+                return Ok(ApiResponse<GetCountryByIdResponse>.SuccessResponse(result, "Berhasil mengubah data negara."));
             }
-
-            country.Name = request.Name;
-            country.IsForeign = request.IsForeign ?? false;
-            country.UpdatedAt = DateTime.UtcNow;
-
-            await _context.SaveChangesAsync();
-
-            var response = new CountryResponse
+            catch (BadHttpRequestException ex)
             {
-                Id = country.Id,
-                Name = country.Name,
-                IsForeign = country.IsForeign,
-                CreatedAt = country.CreatedAt,
-                UpdatedAt = country.UpdatedAt
-            };
-
-            return Ok(ApiResponse<CountryResponse>.SuccessResponse(response, "Berhasil mengubah data negara."));
+                return StatusCode(ex.StatusCode, ApiResponse<object>.ErrorResponse(ex.Message));
+            }
         }
 
         [HttpDelete("{id}")]
         [Authorize(Roles = "ADMIN")]
         public async Task<IActionResult> DeleteCountry(int id)
         {
-            var country = await _context.Countries.FindAsync(id);
-            if (country == null)
+            try
             {
-                return NotFound(ApiResponse<object>.ErrorResponse("Data negara tidak ditemukan."));
+                var command = new DeleteCountryCommand { Id = id };
+                await _mediator.Send(command);
+                return Ok(ApiResponse<object>.SuccessResponse(null!, "Berhasil menghapus negara."));
             }
-
-            var isUsedInProvinces = await _context.Provinces.AnyAsync(p => p.CountryId == id);
-            if (isUsedInProvinces)
+            catch (BadHttpRequestException ex)
             {
-                return BadRequest(ApiResponse<object>.ErrorResponse("Gagal menghapus! Negara ini sedang digunakan pada data Provinsi."));
+                return StatusCode(ex.StatusCode, ApiResponse<object>.ErrorResponse(ex.Message));
             }
-
-            var isUsedInTrips = await _context.BusinessTripRequests.AnyAsync(t => t.DestinationCountryId == id);
-            if (isUsedInTrips)
-            {
-                return BadRequest(ApiResponse<object>.ErrorResponse("Gagal menghapus! Negara ini sedang digunakan pada data Perjalanan Dinas."));
-            }
-
-            _context.Countries.Remove(country);
-            await _context.SaveChangesAsync();
-
-            return Ok(ApiResponse<object>.SuccessResponse(null!, "Berhasil menghapus negara."));
         }
     }
 }
