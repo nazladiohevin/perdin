@@ -6,14 +6,9 @@ using Perdin.WebApi.Models;
 
 namespace Perdin.WebApi.Services
 {
-    public class JwtService : IJwtService
+    public class JwtService(IConfiguration configuration) : IJwtService
     {
-        private readonly IConfiguration _configuration;
-
-        public JwtService(IConfiguration configuration)
-        {
-            _configuration = configuration;
-        }
+        private readonly IConfiguration _configuration = configuration;
 
         public string GenerateAccessToken(User user, List<string> roles)
         {
@@ -28,11 +23,11 @@ namespace Perdin.WebApi.Services
 
             var claims = new List<Claim>
             {
-                new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
-                new Claim(JwtRegisteredClaimNames.UniqueName, user.Username),
-                new Claim(JwtRegisteredClaimNames.Email, user.Email),
-                new Claim(JwtRegisteredClaimNames.Name, user.Name),
-                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
+                new (JwtRegisteredClaimNames.Sub, user.Id.ToString()),
+                new (JwtRegisteredClaimNames.UniqueName, user.Username),
+                new (JwtRegisteredClaimNames.Email, user.Email),
+                new (JwtRegisteredClaimNames.Name, user.Name),
+                new (JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
             };
 
             foreach (var role in roles)

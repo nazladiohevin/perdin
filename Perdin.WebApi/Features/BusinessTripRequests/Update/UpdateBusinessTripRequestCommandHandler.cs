@@ -15,13 +15,8 @@ public class UpdateBusinessTripRequestCommandHandler(AppDbContext dbContext)
             .Include(r => r.OriginCity)
                 .ThenInclude(c => c.Province)
             .Include(r => r.DestinationCity)
-                .ThenInclude(c => c.Province)
-            .FirstOrDefaultAsync(r => r.Id == request.Id, cancellationToken);
-
-        if (tripRequest == null)
-        {
-            throw new BusinessTripRequestException(404, "Pengajuan tidak ditemukan");
-        }
+                .ThenInclude(c => c!.Province)
+            .FirstOrDefaultAsync(r => r.Id == request.Id, cancellationToken) ?? throw new BusinessTripRequestException(404, "Pengajuan tidak ditemukan");
 
         if (!request.IsAdminOrSdm && tripRequest.UserId != request.CurrentUserId)
         {
