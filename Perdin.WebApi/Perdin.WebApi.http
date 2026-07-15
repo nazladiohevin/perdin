@@ -1,6 +1,2 @@
 @Perdin.WebApi_HostAddress = http://localhost:5266
 
-GET {{Perdin.WebApi_HostAddress}}/weatherforecast/
-Accept: application/json
-
-###

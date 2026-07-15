@@ -5,7 +5,7 @@ public class GetProvinceByIdResponse
     public int Id { get; set; }
     public int CountryId { get; set; }
     public string Name { get; set; } = null!;
-    public string? Island { get; set; }
+    public string Island { get; set; } = null!;
     public DateTime CreatedAt { get; set; }
     public DateTime? UpdatedAt { get; set; }
     public CountryInfo? Country { get; set; }

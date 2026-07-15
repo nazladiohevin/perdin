@@ -13,12 +13,8 @@ public class UpdateProvinceCommandHandler(AppDbContext dbContext)
     {
         var province = await dbContext.Provinces
             .Include(p => p.Country)
-            .FirstOrDefaultAsync(p => p.Id == request.Id, cancellationToken);
-
-        if (province == null)
-        {
-            throw new BadHttpRequestException("Data provinsi tidak ditemukan.", 404);
-        }
+            .FirstOrDefaultAsync(p => p.Id == request.Id, cancellationToken)
+            ?? throw new BadHttpRequestException("Data provinsi tidak ditemukan.", 404);
 
         province.Name = request.Request.Name;
         province.Island = request.Request.Island;

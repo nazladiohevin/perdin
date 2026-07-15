@@ -7,8 +7,9 @@ public class CreateProvinceRequest
     [Required(ErrorMessage = "Nama provinsi wajib diisi")]
     public string Name { get; set; } = null!;
 
-    public string? Island { get; set; }
+    [Required(ErrorMessage = "Nama pulau wajib diisi")]
+    public string Island { get; set; } = null!;
 
-    [Required(ErrorMessage = "CountryId wajib diisi")]
+    [Required(ErrorMessage = "Negara wajib diisi")]
     public int CountryId { get; set; }
 }
